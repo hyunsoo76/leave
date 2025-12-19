@@ -1,4 +1,4 @@
-asgiref==3.11.0
+asgiref==3.7,<4
 Django==4.2.27
 gunicorn==23.0.0
 packaging==25.0
