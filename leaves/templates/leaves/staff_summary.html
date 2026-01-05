@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>연차 전체 요약</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR"; padding: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid #eee; padding: 10px 8px; vertical-align: top; }
+    th { text-align: left; background: #fafafa; position: sticky; top: 0; }
+    .small { color:#666; font-size:12px; line-height:1.4; }
+    .num { text-align:right; white-space:nowrap; }
+    .neg { color:#d00; font-weight:600; }
+  </style>
+</head>
+<body>
+  <h2>전체 연차 요약 (관리자)</h2>
+
+  <form method="get" style="margin: 8px 0 16px;">
+    <label>연도:
+      <input type="number" name="year" value="{{ year }}" style="width: 90px;">
+    </label>
+    <button type="submit">조회</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>직원</th>
+        <th class="num">기본연차</th>
+        <th class="num">이월</th>
+        <th class="num">합계연차</th>
+        <th>대체휴무 발생(내역)</th>
+        <th class="num">대체사용</th>
+        <th class="num">연차사용</th>
+        <th class="num">총잔여</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      {% with s=row.summary %}
+      <tr>
+        <td>{{ row.employee.name }}</td>
+        <td class="num">{{ row.leave_year.base_days }}</td>
+        <td class="num">{{ row.leave_year.carry_over }}</td>
+        <td class="num">{{ s.total_annual }}</td>
+        <td class="small">
+          합: <b>{{ s.comp_granted }}</b><br/>
+          {% for c in row.comp_list %}
+            - {{ c.worked_date|date:"m/d" }} {{ c.holiday_name }} (+{{ c.amount }})<br/>
+          {% empty %}
+            (없음)
+          {% endfor %}
+        </td>
+        <td class="num">{{ s.used_comp }}</td>
+        <td class="num">{{ s.used_annual }}</td>
+        <td class="num {% if s.total_remain < 0 %}neg{% endif %}">{{ s.total_remain }}</td>
+      </tr>
+      {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="margin-top:16px;"><a href="/">달력으로</a></p>
+</body>
+</html>

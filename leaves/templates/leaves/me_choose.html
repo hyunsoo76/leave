@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>직원 선택</title>
+</head>
+<body style="font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Noto Sans KR'; padding:12px;">
+  <h2>직원 선택</h2>
+  <p>동일 생년월일이 여러 명입니다. 본인을 선택하세요.</p>
+  <ul>
+    {% for e in employees %}
+      <li><a href="{% url 'leaves:me_detail' e.id %}">{{ e.name }}</a></li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

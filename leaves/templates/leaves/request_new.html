@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>휴무 신청</title>
+  <style>
+    body { margin:0; padding:16px; font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial; }
+    .wrap { max-width: 520px; margin: 0 auto; }
+    h2 { margin: 0 0 12px; }
+    .card { border:1px solid #eee; border-radius: 14px; padding: 14px; }
+    .row { margin-bottom: 10px; }
+    label { display:block; font-size: 13px; color:#444; margin-bottom: 6px; }
+    input, select { width:100%; padding: 10px; border:1px solid #ddd; border-radius: 10px; font-size: 15px; }
+    .btn { width:100%; padding: 12px; border:0; border-radius: 10px; background:#111; color:#fff; font-size: 16px; cursor:pointer; }
+    .muted { color:#666; font-size: 13px; margin-top: 10px; }
+    .err { color:#d00; font-size: 13px; margin: 6px 0 0; }
+    .topline { display:flex; justify-content: space-between; align-items:center; gap: 10px; }
+    .name { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topline">
+      <h2>휴무 신청</h2>
+      <a href="/" class="muted">달력으로</a>
+    </div>
+
+    <div class="card">
+      {% if employee %}
+        <div class="row">
+          <div class="name">신청자: {{ employee.name }}</div>
+        </div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="birth" value="{{ birth }}">
+
+        {% if not employee %}
+          <div class="row">
+            <label>직원 선택</label>
+            {{ form.employee_choice }}
+            {% if form.employee_choice.errors %}
+              <div class="err">{{ form.employee_choice.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="row">
+          <label>휴무 종류</label>
+          {{ form.leave_type }}
+          {% if form.leave_type.errors %}
+            <div class="err">{{ form.leave_type.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <div class="row" id="halfDayRow" style="display:none;">
+          <label>반차 구분</label>
+          {{ form.half_day }}
+          {% if form.half_day.errors %}
+            <div class="err">{{ form.half_day.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <div class="row">
+          <label>시작일</label>
+          {{ form.start_date }}
+          {% if form.start_date.errors %}
+            <div class="err">{{ form.start_date.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <div class="row" id="endDateRow">
+          <label>종료일</label>
+          {{ form.end_date }}
+          {% if form.end_date.errors %}
+            <div class="err">{{ form.end_date.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <div class="row">
+          <label>사유(금일/전일 신청 필수기재)</label>
+          {{ form.reason }}
+          {% if form.reason.errors %}
+            <div class="err">{{ form.reason.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <button class="btn" type="submit">신청</button>
+
+        <div class="muted" style="margin-top:12px;">
+          {% if selected_date %}선택 날짜: {{ selected_date|date:"Y-m-d" }}{% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleHalfUI() {
+      const leaveType = document.getElementById("leaveType");
+      const halfDayRow = document.getElementById("halfDayRow");
+      const endDateRow = document.getElementById("endDateRow");
+      const startDate = document.getElementById("startDate");
+      const endDate = document.getElementById("endDate");
+
+      const isHalf = (leaveType.value === "HALF");
+
+      // 반차면 오전/오후 보이기 + 종료일 숨기기
+      halfDayRow.style.display = isHalf ? "block" : "none";
+      endDateRow.style.display = isHalf ? "none" : "block";
+
+      // 반차면 end_date를 start_date로 맞춰둠(서버에서도 강제하지만 UX용)
+      if (isHalf && startDate && endDate) {
+        endDate.value = startDate.value;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const leaveType = document.getElementById("leaveType");
+      const startDate = document.getElementById("startDate");
+      const endDate = document.getElementById("endDate");
+
+      toggleHalfUI();
+
+      leaveType.addEventListener("change", toggleHalfUI);
+      startDate.addEventListener("change", () => {
+        if (leaveType.value === "HALF" && endDate) {
+          endDate.value = startDate.value;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

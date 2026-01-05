@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    {% load static %}
+  <link rel="icon" href="{% static 'favicon_blue.ico' %}">
+  <title>연차 전체 리스트</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR"; padding: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
+    th { background: #fafafa; text-align: left; }
+    .small { font-size: 12px; color:#666; margin-top:4px; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#f2f2f2; margin:2px 4px 0 0; }
+  </style>
+</head>
+<body>
+  <h2>전체 리스트 ({{ year }})</h2>
+
+  <p>
+    <a href="{% url 'leaves:calendar' %}"
+      style="
+       display:inline-block;
+       padding:8px 14px;
+       background:#111;
+       color:#fff;
+       border-radius:8px;
+       text-decoration:none;
+       font-size:14px;
+     ">달력</a> |
+    <!-- <br style="margin:8px 0;"> -->
+  <a href="{% url 'leaves:comp_grant_bulk' year=year %}"
+     style="
+       display:inline-block;
+       padding:8px 14px;
+       background:#111;
+       color:#fff;
+       border-radius:8px;
+       text-decoration:none;
+       font-size:14px;
+     ">
+    ➕ 대체휴무발생 일괄등록
+  </a> |
+  <a href="{% url 'leaves:memo_new' %}"
+     style="
+       display:inline-block;
+       padding:8px 14px;
+       background:#111;
+       color:#fff;
+       border-radius:8px;
+       text-decoration:none;
+       font-size:14px;
+     ">
+    ➕ 관리자 메모입력
+    </a>
+</br>
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>직원</th>
+        <th>기본</th>
+        <th>이월</th>
+        <th>대체발생</th>
+        <th>총연차수</th>
+        <th>대체사용</th>
+        <th>연차사용</th>
+        <th>총사용</th>
+        <th>총잔여</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>
+          <a href="{% url 'leaves:me_detail' r.emp.id %}?year={{ year }}">{{ r.emp.name }}</a>
+          <!-- {% if r.comp_grants %}
+            <div class="small">
+              {% for g in r.comp_grants %}
+                <span class="pill">{{ g.worked_date|date:"m/d" }} {{ g.holiday_name }} (+{{ g.amount }})</span>
+              {% endfor %}
+            </div>
+          {% endif %} --> <!-- 전체리스트에서 직원성명아래 대체휴무발생 비고표시 안나오게 -->
+        </td>
+        <td>{{ r.base_days }}</td>
+        <td>{{ r.carry_over }}</td>
+        <td>{{ r.comp_total }}</td>
+        <td><b>{{ r.total_grant }}</b></td>
+        <td>{{ r.used_comp }}</td>
+        <td>{{ r.used_annual }}</td>
+        <td>{{ r.used_total }}</td>
+        <td><b>{{ r.remain_total }}</b></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

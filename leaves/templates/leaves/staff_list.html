@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>직원 연차 현황</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Noto Sans KR";padding:16px}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{border-bottom:1px solid #eee;padding:10px;text-align:center;white-space:nowrap}
+    th{text-align:center;background:#fafafa;position:sticky;top:0}
+    td.name{text-align:left}
+    .muted{color:#666;font-size:12px}
+    .section{margin-top:18px}
+    .card{border:1px solid #eee;border-radius:12px;padding:12px;margin-top:10px}
+     
+    .table-wrap{
+      width:100%;
+      overflow-x:auto;
+      -webkit-overflow-scrolling: touch;
+      border:1px solid #eee;
+      border-radius:12px;
+      background:#fff;
+    }
+    table.staff{
+      width:100%;
+      border-collapse:collapse;
+      min-width: 980px; /* 너무 좁아지면 깨져서, 최소 폭 보장 */
+      font-size:14px;
+    }
+    table.staff th, table.staff td{
+      border-bottom:1px solid #eee;
+      padding:10px 8px;
+      text-align:center;
+      white-space:nowrap;
+    }
+    table.staff th{
+      background:#fafafa;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    td.name{ text-align:left; }
+    /* 가로 스크롤 컨테이너 */
+    .table-scroll{
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid #eee;
+      border-radius: 12px;
+    }
+
+    /* 테이블이 좁을 때도 컬럼이 안 찌그러지도록 */
+    .staff-table{
+      width: 100%;
+      min-width: 920px; /* 컬럼 많은 경우 필수: 숫자는 필요하면 조정 */
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    /* 첫 컬럼(직원) 고정 */
+    .staff-table th:first-child,
+    .staff-table td:first-child{
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: #fff; /* 스크롤될 때 뒤 컬럼이 비치지 않게 */
+      text-align: left;
+    }
+
+    /* 헤더 sticky(top:0) 쓰고 있으면, 첫 헤더셀은 z-index 더 높게 */
+    .staff-table thead th{
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #fafafa;
+    }
+
+    .staff-table thead th:first-child{
+      z-index: 3;
+      background: #fafafa;
+    }
+
+/* 첫 컬럼 오른쪽에 경계선(고정 느낌) */
+.staff-table th:first-child,
+.staff-table td:first-child{
+  box-shadow: 1px 0 0 #eee;
+}
+
+/* 모바일에서 첫 컬럼 폭 확보(이름 잘림 방지) */
+.staff-table th:first-child,
+.staff-table td:first-child{
+  min-width: 40px; /* 이름 길면 110~130으로 */
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .staff-table th,
+  .staff-table td {
+    font-size: 13px;
+    padding: 8px 6px;
+  }
+}
+
+
+
+    
+  </style>
+</head>
+<body>
+  <div style="max-width:1200px; margin:0; padding:0;">
+  <iframe
+    src="{% url 'leaves:calendar_embed' %}"
+    style="width:100%; height:720px; border:0; border-radius:12px; display:block;"
+    loading="lazy"
+  ></iframe>
+</div>
+  <h2>직원 연차 현황 ({{ year }})</h2>
+  <p style="margin-top:16px;">
+    <a href="{% url 'leaves:calendar' %}">달력으로</a>
+  </p>
+<div class="table-scroll">
+  <table class="staff-table">
+    <thead>
+      <tr>
+        <th>직원</th>
+        <th>이월</th>
+        <th>기본</th>
+        <th>대체발생</th>
+        <th>총연차</th>
+        <th>대체사용</th>
+        <th>연차사용</th>
+        <th>총사용</th>
+        <th>잔여</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td class="name">
+          <a href="{% url 'leaves:staff_detail' r.employee.id %}?year={{ year }}">{{ r.employee.name }}</a>
+        </td>
+        <td>{{ r.carry }}</td>
+        <td>{{ r.base }}</td>
+        <td>{{ r.comp_granted }}</td>
+        <td><b>{{ r.total }}</b></td>
+        <td>{{ r.used_comp }}</td>
+        <td>{{ r.used_annual }}</td>
+        <td><b>{{ r.used_total }}</b></td>
+        <td><b>{{ r.remain }}</b></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+  <div class="section">
+    <h3>대체휴일 발생 내역</h3>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">공휴일</th>
+            <th>발생</th>
+            <th>인원</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in comp_summary %}
+            <tr>
+              <td style="text-align:left">{{ c.holiday_name|default:"(이름없음)" }}</td>
+              <td>{{ c.amount }}일</td>
+              <td>{{ c.cnt }}명</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="muted" style="text-align:center">대체휴무 발생 내역이 없습니다.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p style="margin-top:16px;">
+    <a href="{% url 'leaves:calendar' %}">달력으로</a>
+  </p>
+</body>
+</html>

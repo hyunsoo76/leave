@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>내 연차</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR"; padding: 12px; }
+    .box { border:1px solid #eee; border-radius:12px; padding:12px; margin:10px 0; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    .k { color:#666; font-size:12px; }
+    .v { font-size:18px; font-weight:700; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th, td { border-bottom:1px solid #eee; padding:10px 8px; }
+    th { text-align:left; background:#fafafa; }
+  </style>
+</head>
+<body>
+  <h2>{{ employee.name }} 님 ({{ year }})</h2>
+
+  <div class="box">
+    <div class="row">
+      <div>
+        <div class="k">이월</div>
+        <div class="v">{{ leave_year.carry_over }}</div>
+      </div>
+      <div>
+        <div class="k">올해 기본연차</div>
+        <div class="v">{{ leave_year.base_days }}</div>
+      </div>
+      <div>
+        <div class="k">대체휴무 발생</div>
+        <div class="v">{{ summary.comp_granted }}</div>
+      </div>
+      <div>
+        <div class="k">총 잔여</div>
+        <div class="v">{{ summary.total_remain }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h3 style="margin:0 0 8px;">대체휴무 발생 내역</h3>
+    {% for c in comp_list %}
+      <div>• {{ c.worked_date|date:"Y-m-d" }} {{ c.holiday_name }} (+{{ c.amount }})</div>
+    {% empty %}
+      <div style="color:#666;">없음</div>
+    {% endfor %}
+  </div>
+
+  <div class="box">
+    <h3 style="margin:0 0 8px;">사용 내역</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>기간</th>
+          <th>종류</th>
+          <th class="num">대체사용</th>
+          <th class="num">연차사용</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in reqs %}
+        <tr>
+          <td>
+            {% if r.start_date == r.end_date %}
+              {{ r.start_date|date:"Y-m-d" }}
+            {% else %}
+              {{ r.start_date|date:"Y-m-d" }} ~ {{ r.end_date|date:"Y-m-d" }}
+            {% endif %}
+          </td>
+          <td>
+            {{ r.get_leave_type_display }}
+            {% if r.leave_type == "HALF" %}({{ r.get_half_day_display }}){% endif %}
+          </td>
+          <td>{{ r.used_comp }}</td>
+          <td>{{ r.used_annual }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="color:#666;">사용 내역 없음</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <p><a href="/">달력으로</a></p>
+</body>
+</html>

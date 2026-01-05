@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>전체 연차 리스트 (관리자)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo","Noto Sans KR"; margin:0; padding:12px; background:#f6f7f9; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .card { background:#fff; border-radius:14px; padding:14px; margin:12px 0; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+    .name { font-size:18px; font-weight:700; display:flex; justify-content:space-between; gap:8px; }
+    .muted { color:#666; font-size:13px; }
+    .grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:10px; }
+    .kv { background:#fafafa; border:1px solid #eee; border-radius:12px; padding:10px; }
+    .kv b { display:block; font-size:12px; color:#666; margin-bottom:2px; }
+    .kv span { font-size:16px; font-weight:700; }
+    .chips { margin-top:10px; }
+    .chip { display:inline-block; background:#111; color:#fff; padding:6px 10px; border-radius:999px; font-size:12px; margin:4px 6px 0 0; }
+    a { color:#111; text-decoration: none; }
+    details { margin-top:10px; }
+    table { width:100%; border-collapse: collapse; font-size:13px; }
+    th,td { border-bottom:1px solid #eee; padding:8px 6px; text-align:left; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h2 style="margin:0;">전체 연차 리스트 ({{ year }})</h2>
+    <div class="muted">
+      <a href="/">달력</a> ·
+      <a href="{% url 'leaves:admin_employee_list' %}?year={{ year|add:'-1' }}">이전</a> ·
+      <a href="{% url 'leaves:admin_employee_list' %}?year={{ year|add:'1' }}">다음</a>
+    </div>
+  </div>
+  <a href="{% url 'leaves:comp_grant_bulk' year %}">대체휴무발생 일괄등록</a>
+  {% for r in rows %}
+    <div class="card">
+      <div class="name">
+        <a href="{% url 'leaves:employee_detail' r.employee.id %}?year={{ year }}">
+          {{ r.employee.name }}
+        </a>
+        <span class="muted">잔여: <b>{{ r.summary.remain }}</b></span>
+      </div>
+
+      <div class="grid">
+        <div class="kv"><b>기본 연차</b><span>{{ r.summary.base_days }}</span></div>
+        <div class="kv"><b>이월</b><span>{{ r.summary.carry_over }}</span></div>
+        <div class="kv"><b>대체휴무 발생</b><span>{{ r.summary.comp_granted }}</span></div>
+        <div class="kv"><b>총 부여</b><span>{{ r.summary.total_grant }}</span></div>
+        <div class="kv"><b>대체 사용</b><span>{{ r.summary.used_comp }}</span></div>
+        <div class="kv"><b>연차 사용</b><span>{{ r.summary.used_annual }}</span></div>
+        <div class="kv"><b>총 사용</b><span>{{ r.summary.total_used }}</span></div>
+        <div class="kv"><b>잔여</b><span>{{ r.summary.remain }}</span></div>
+      </div>
+
+      <details>
+        <summary>대체휴무 발생 내역 보기</summary>
+        {% if r.comp_grants %}
+          <table>
+            <thead><tr><th>근무일</th><th>공휴일/메모</th><th>발생</th></tr></thead>
+            <tbody>
+              {% for g in r.comp_grants %}
+                <tr>
+                  <td>{{ g.worked_date }}</td>
+                  <td>
+                    {{ g.holiday_name }}{% if g.memo %} ({{ g.memo }}){% endif %}
+                  </td>
+                  <td>{{ g.amount }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="muted" style="margin-top:6px;">발생 없음</div>
+        {% endif %}
+      </details>
+
+      <details>
+        <summary>월별 사용 합계 보기</summary>
+        {% if r.monthly %}
+          <div class="chips">
+            {% for k,v in r.monthly.items %}
+              <span class="chip">{{ k }}: {{ v }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="muted" style="margin-top:6px;">사용 없음</div>
+        {% endif %}
+      </details>
+    </div>
+  {% endfor %}
+</div>
+</body>
+</html>

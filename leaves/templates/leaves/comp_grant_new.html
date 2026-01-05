@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>대체휴무 추가</title></head>
+<body>
+<h2>대체휴무 발생 추가 - {{ emp.name }} ({{ year }})</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <p>근무한 날짜: <input type="date" name="worked_date" required></p>
+  <p>공휴일/메모(예: 05/05 어린이날, 토요근무): <input type="text" name="holiday_name"></p>
+  <p>발생수량:
+    <select name="amount">
+      <option value="1.0">1.0</option>
+      <option value="0.5">0.5</option>
+      <option value="1.5">1.5</option>
+      <option value="2.0">2.0</option>
+    </select>
+  </p>
+  <button type="submit">저장</button>
+</form>
+
+<p><a href="{% url 'leaves:employee_detail' emp.id year %}">← 돌아가기</a></p>
+</body>
+</html>

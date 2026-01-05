@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>달력 메모</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR";padding:16px}
+    .card{max-width:560px;border:1px solid #eee;border-radius:12px;padding:14px}
+    input{width:100%;font-size:16px;padding:10px;border:1px solid #ddd;border-radius:10px}
+    button{margin-top:10px;padding:12px 14px;border:0;border-radius:10px;background:#111;color:#fff;cursor:pointer}
+    .row{margin:10px 0}
+    a{color:#111}
+  </style>
+</head>
+<body>
+  <p><a href="{% url 'leaves:calendar' %}">← 달력으로</a></p>
+  <h2>{% if mode == "edit" %}메모 수정{% else %}메모 추가{% endif %}</h2>
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">저장</button>
+    </form>
+  </div>
+</body>
+</html>

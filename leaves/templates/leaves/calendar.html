@@ -1,0 +1,430 @@
+<!doctype html>
+<html>
+<head>
+  {% load static %}
+  <link rel="icon" href="{% static 'favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>휴무 달력</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+  <style>
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial;
+      overflow-x: hidden;
+    }
+
+    /* ✅ 너무 커지지 않게 폭 제한 (여기 숫자만 조절하면 전체 크기 느낌이 바뀜) */
+    #calendar {
+      width: 100%;
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    /* ✅ 달력이 세로로 너무 커지는 것 방지: 날짜칸 최소 높이 살짝 줄임 */
+    .fc .fc-daygrid-day-frame { min-height: 90px; }
+    @media (min-width: 1400px) {
+      .fc .fc-daygrid-day-frame { min-height: 100px; }
+    }
+
+    /* ===== Modal ===== */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+    }
+    .modal {
+      width: 100%;
+      max-width: 380px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .modal h3 { margin: 0 0 8px; font-size: 18px; }
+    .modal .sub { color: #666; font-size: 13px; margin-bottom: 12px; }
+    .modal input {
+      width: 100%;
+      font-size: 18px;
+      padding: 12px 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      outline: none;
+    }
+    .modal .row { display: flex; gap: 10px; margin-top: 12px; }
+    .btn {
+      flex: 1;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn-cancel { background: #eee; }
+    .btn-ok { background: #111; color: #fff; }
+    .error { color: #d00; font-size: 12px; margin-top: 8px; min-height: 16px; }
+
+    /* ===== 요일 색상 ===== */
+    .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion { color: #d00; font-weight: 700; }
+    .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion { color: #06c; font-weight: 700; }
+    .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number { color: #d00; font-weight: 700; }
+    .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number { color: #06c; font-weight: 700; }
+
+    /* ===== 이벤트 글자 잘림 방지 + 가독성 ===== */
+    .fc .fc-daygrid-event { white-space: normal; }
+    .fc .fc-daygrid-event .fc-event-title { white-space: normal; }
+    .fc .fc-daygrid-event .fc-event-title,
+    .fc .fc-daygrid-event .fc-event-title-container {
+      font-size: 12px;
+      line-height: 1.15;
+      font-weight: 700;
+    }
+
+    /* 반차 라벨(오전/오후) 흰색 */
+    .fc-half-label {
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.1;
+      margin-top: 2px;
+    }
+
+    /* 헤더 모바일 줄바꿈 */
+    .fc .fc-header-toolbar { gap: 8px; }
+    .fc .fc-toolbar-chunk { display: flex; align-items: center; gap: 8px; }
+    @media (max-width: 480px) {
+      .fc .fc-header-toolbar { flex-wrap: wrap; }
+      .fc .fc-toolbar-title { font-size: 22px; }
+      .fc .fc-button { padding: 6px 10px; font-size: 14px; }
+      .fc .fc-daygrid-day-frame { min-height: 78px; }
+    }
+
+    /* ===== +N(더보기) 팝오버만 다크(검정) 스타일 ===== */
+      .fc .fc-more-popover{
+        background: #111 !important;
+        border: 1px solid #333 !important;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.35) !important;
+      }
+
+      .fc .fc-more-popover .fc-popover-header{
+        background: #111 !important;
+        color: #fff !important;
+        border-bottom: 1px solid #333 !important;
+      }
+
+      /* 헤더 타이틀(날짜) */
+      .fc .fc-more-popover .fc-popover-title{
+        color: #fff !important;
+        font-weight: 700;
+      }
+
+      /* 닫기(X) 버튼 */
+      .fc .fc-more-popover .fc-popover-close{
+        color: #fff !important;
+        opacity: 0.9;
+      }
+      .fc .fc-more-popover .fc-popover-close:hover{
+        opacity: 1;
+      }
+
+      /* 팝오버 안 이벤트 리스트 영역 */
+      .fc .fc-more-popover .fc-popover-body{
+        background: #111 !important;
+        color: #fff !important;
+      }
+
+      /* 팝오버 안 이벤트(바) 텍스트는 흰색으로 */
+      .fc .fc-more-popover .fc-event,
+      .fc .fc-more-popover .fc-event .fc-event-title,
+      .fc .fc-more-popover .fc-event .fc-event-time{
+        color: #fff !important;
+      }
+
+      /* 메모 이벤트(회색 계열) */
+      .fc .fc-memo-event,
+      .fc .fc-memo-event .fc-event-main {
+        background: rgba(0,0,0,0.65) !important;
+        border-color: rgba(0,0,0,0.65) !important;
+      }
+      .fc .fc-memo-event .fc-event-title {
+        color: #fff !important;
+        font-weight: 600;
+      }
+      
+      /* 공휴일 이벤트를 글자만 심플하게(배경 없이) + 빨간색 */
+      .fc-holiday-event,
+      .fc-holiday-event .fc-event-main,
+      .fc-holiday-event .fc-event-title {
+        background: transparent !important;
+        border: 0 !important;
+        color: #d00 !important;
+        font-weight: 700;
+      }
+      
+      /* 공휴일 이벤트가 있는 날짜 셀 */
+      .fc-daygrid-day:has(.fc-holiday-event)
+        .fc-daygrid-day-number {
+        color: #d00 !important;
+        font-weight: 700;
+      }
+
+      /* 월(크게) + 년도(작게) */
+      .fc-title-wrap{
+        display:flex;
+        align-items:flex-end;
+        gap:10px;
+      }
+      .fc-title-month{
+        font-size: 34px;
+        font-weight: 800;
+        line-height: 1;
+      }
+      .fc-title-year{
+        font-size: 16px;
+        font-weight: 600;
+        opacity: .7;
+        line-height: 1;
+        transform: translateY(-2px); /* 살짝 위로(취향) */
+      }
+
+      /* ✅ 타이틀: 월 크게 + 년 작게 */
+        .fc .fc-toolbar-title{
+          display:flex;
+          align-items:baseline;
+          gap:10px;
+        }
+
+        .fc-title-month{
+          font-size:40px;    /* 월 크게 */
+          font-weight:800;
+          line-height:1;
+        }
+
+        .fc-title-year{
+          font-size:16px;    /* 년 작게 */
+          font-weight:600;
+          opacity:.75;
+          line-height:1;
+        }
+
+  
+  </style>
+</head>
+
+<body>
+  <div id="calendar"></div>
+
+  <!-- ===== Modal ===== -->
+  <div id="authModalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <h3 id="authTitle">휴무 신청</h3>
+      <div class="sub">
+        선택 날짜: <b id="selectedDateText">-</b><br/>
+        생년월일 6자리(예: 760910)를 입력하세요.
+      </div>
+
+      <input id="birthInput" inputmode="numeric" autocomplete="one-time-code"
+             placeholder="생년월일 6자리" maxlength="6" />
+
+      <div id="authError" class="error"></div>
+
+      <div class="row">
+        <button type="button" class="btn btn-cancel" id="btnCancel">취소</button>
+        <button type="button" class="btn btn-ok" id="btnOk">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EVENTS_URL = "{% url 'leaves:events_api' %}";
+    const REQUEST_NEW_URL = "{% url 'leaves:request_new' %}";
+
+    // ===== Modal helpers =====
+    const backdrop = document.getElementById('authModalBackdrop');
+    const selectedDateText = document.getElementById('selectedDateText');
+    const birthInput = document.getElementById('birthInput');
+    const authError = document.getElementById('authError');
+    const btnCancel = document.getElementById('btnCancel');
+    const btnOk = document.getElementById('btnOk');
+
+    let selectedDateStr = null;
+
+    function openAuthModal(dateStr) {
+      selectedDateStr = dateStr;
+      selectedDateText.textContent = dateStr;
+      authError.textContent = '';
+      birthInput.value = '';
+      backdrop.style.display = 'flex';
+      backdrop.setAttribute('aria-hidden', 'false');
+      setTimeout(() => birthInput.focus(), 50);
+    }
+
+    function closeAuthModal() {
+      backdrop.style.display = 'none';
+      backdrop.setAttribute('aria-hidden', 'true');
+      selectedDateStr = null;
+    }
+
+    function goRequestNew() {
+      const birth = birthInput.value.trim();
+      if (!selectedDateStr) return;
+
+      if (!/^\d{6}$/.test(birth)) {
+        authError.textContent = '생년월일 6자리 숫자로 입력해주세요. (예: 760910)';
+        birthInput.focus();
+        return;
+      }
+
+      window.location.href =
+        `${REQUEST_NEW_URL}?date=${encodeURIComponent(selectedDateStr)}&birth=${encodeURIComponent(birth)}`;
+    }
+
+    btnCancel.addEventListener('click', closeAuthModal);
+    btnOk.addEventListener('click', goRequestNew);
+
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeAuthModal();
+    });
+
+    birthInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') goRequestNew();
+      if (e.key === 'Escape') closeAuthModal();
+    });
+
+    // ===== FullCalendar =====
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        dayMaxEventRows: 4,
+        moreLinkClick: 'popover',
+
+        /* ✅ 여기! 달력이 "덜 커지게" 만드는 핵심 옵션 */
+        aspectRatio: 2.05,   // 숫자 ↑ = 더 납작(세로 덜 씀). 1.8~2.2 사이에서 취향대로
+
+        height: 'auto',
+        events: EVENTS_URL,
+
+        headerToolbar: {
+          left: 'title',
+          center: '',
+          right: 'myLeave today prev,next'
+        },
+
+        customButtons: {
+          customTitle: {
+            text: '',   // 실제 텍스트는 JS로 주입
+          },
+          myLeave: {
+            text: '내 연차 보기',
+            click: function () {
+              window.location.href = "{% url 'leaves:me_lookup' %}";
+            }
+          }
+        },
+
+        buttonText: { today: 'today' },
+
+        datesSet: function(info) {
+            // currentStart는 "현재 달력 화면의 시작 주"라서 월이 어긋날 수 있음
+            // title에 표시되는 달은 view의 activeStart/currentStart보다
+            // view의 currentStart를 쓰면 가끔 전월로 보일 수 있어서,
+            // "현재 view의 중심 달"을 안정적으로 잡기 위해 info.view.currentStart를 보정
+            const d = new Date(info.view.currentStart);
+
+            // ✅ 표시할 달(숫자) / 년도
+            const month = d.getMonth() + 1;   // 1~12
+            const year = d.getFullYear();
+
+            const titleEl = document.querySelector('.fc .fc-toolbar-title');
+            if (titleEl) {
+              titleEl.innerHTML = `
+                <span class="fc-title-month">${month}</span>
+                <span class="fc-title-year">${year}</span>
+              `;
+            }
+          },
+
+        dateClick: function(info) {
+          const today = new Date();
+          today.setHours(0,0,0,0);          // 오늘 00:00 기준
+          const clicked = new Date(info.dateStr);
+
+          if (clicked < today) {
+            alert('과거 날짜에는 연차를 신청할 수 없습니다.');
+            return;                         // ❌ 여기서 종료
+          }
+
+        openAuthModal(info.dateStr);      // ✅ 오늘 이후만 허용
+          },
+        
+        dayCellDidMount: function(arg) {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            const cellDate = new Date(arg.date);
+            cellDate.setHours(0,0,0,0);
+
+            if (cellDate < today) {
+              // 배경만 살짝
+              arg.el.style.backgroundColor = 'rgba(0,0,0,0.03)';
+            }
+          },  
+
+
+        // ✅ 괄호 제거 + 오전/오후 흰색
+        eventContent: function(arg) {
+            const isMobile = window.matchMedia('(max-width: 480px)').matches;
+
+            const wrap = document.createElement('div');
+            wrap.style.lineHeight = '1.15';
+
+            const half = arg.event.extendedProps.halfLabel; // "오전"/"오후"/""
+
+            if (!isMobile && half) {
+              // ✅ PC: 한 줄 "이름-오전"
+              const oneLine = document.createElement('div');
+              oneLine.textContent = `${arg.event.title}-${half}`;
+              wrap.appendChild(oneLine);
+              return { domNodes: [wrap] };
+            }
+
+            // ✅ 모바일(또는 half 없음): 기존 그대로 (이름 / 아래 라벨)
+            const name = document.createElement('div');
+            name.textContent = arg.event.title;
+            wrap.appendChild(name);
+
+            if (half) {
+              const sub = document.createElement('div');
+              sub.textContent = half;
+              sub.className = 'fc-half-label';
+              wrap.appendChild(sub);
+            }
+
+            return { domNodes: [wrap] };
+          },
+
+      });
+
+      calendar.render();
+
+      // 렌더 직후 폭 계산 보정 (간헐적 틀어짐 방지)
+      setTimeout(() => calendar.updateSize(), 0);
+      window.addEventListener('resize', () => calendar.updateSize());
+    });
+
+  </script>
+</body>
+</html>

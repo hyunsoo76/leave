@@ -1,0 +1,299 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>달력(임베드)</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+  <style>
+    /* iframe 안에서 스크롤바 생기지 않게 */
+    html, body { margin: 100; padding: 0; height: 100%; overflow: hidden; }
+    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial; padding:12px; }
+
+    @media (max-width: 480px) {
+      body { padding: 6px; }   /* ✅ 모바일에서 더 넓게 */
+    }
+
+    /* ✅ 핵심: 모바일에서는 max-width 해제해서 꽉 차게 */
+    #calendar{
+      width: 100%;
+      height: 100%;
+      max-width: none;  /* PC에서는 유지 */
+      margin: 0;
+    }
+    @media (max-width: 480px) {
+      #calendar { max-width: none; }  /* ✅ 모바일에서 제한 제거 */
+    }
+
+    .fc { margin: 0; }
+
+    /* 요일 색상 */
+    .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion { color:#d00; font-weight:700; }
+    .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion { color:#06c; font-weight:700; }
+    .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number { color:#d00; font-weight:700; }
+    .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number { color:#06c; font-weight:700; }
+
+    /* 내부 스크롤(파란 스크롤바) 방지 */
+    .fc .fc-scroller { overflow: hidden !important; }
+
+    /* ===== 이벤트(칩) 스타일: 연차/반차 구분 ===== */
+    .fc .fc-daygrid-event { white-space: normal; border: 0; }
+    .fc .fc-daygrid-event .fc-event-main { padding: 0; }
+
+    /* 연차(기본) = 파란 칩 */
+    .fc .fc-daygrid-event.ev-annual {
+      background: rgba(37, 99, 235, 0.95);
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+    /* 반차 = 연한 하늘색 칩 */
+    .fc .fc-daygrid-event.ev-half {
+      background: rgba(96, 165, 250, 0.95);
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+
+    /* 이름/라벨 글씨 */
+    .fc-emp-name{
+      color:#fff;
+      font-size:12px;
+      font-weight:500;
+      letter-spacing:-0.005em;
+      line-height:1.15;
+      padding-left: 5px;
+    }
+    .fc-half-label{
+      display:block;
+      margin-top:2px;
+      font-size:11px;
+      font-weight:500;
+      color:#fff;
+      line-height:1.1;
+      letter-spacing:-0.01em;
+      opacity:0.95;
+      padding-left: 5px;
+    }
+
+    /* ✅ 과거 날짜: 칸 배경만 아주 살짝 회색 */
+    .fc .fc-daygrid-day.fc-past-soft { background: rgba(0,0,0,0.03); }
+
+    /* ✅ +N(더보기) */
+    .fc .fc-daygrid-more-link{
+      color:#111;
+      font-weight:600;
+    }
+
+    /* ✅ 팝오버(더보기 창) : 검은 배경 + 흰 글씨 */
+    .fc .fc-popover{
+      background: rgba(0,0,0,0.92);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      color:#fff;
+    }
+    .fc .fc-popover-header{
+      background: transparent;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      color:#fff;
+    }
+    .fc .fc-popover-title{ color:#fff; font-weight:700; }
+    .fc .fc-popover-close{
+      color:#fff;
+      opacity:0.9;
+    }
+    .fc .fc-popover-body{ color:#fff; }
+
+    /* ✅ 팝오버 안의 이벤트도 "칩 색상"이 그대로 보이게 */
+    .fc .fc-popover .fc-daygrid-event { margin: 4px 0; }
+
+    /* 모바일 헤더 */
+    @media (max-width: 480px) {
+      .fc .fc-header-toolbar { flex-wrap: wrap; gap: 6px; }
+      .fc .fc-toolbar-title { font-size: 20px; }
+      .fc .fc-button { padding: 6px 10px; font-size: 13px; }
+    }
+
+    /* 메모 이벤트(회색 계열) */
+    .fc .fc-memo-event,
+    .fc .fc-memo-event .fc-event-main {
+      background: rgba(0,0,0,0.65) !important;
+      border-color: rgba(0,0,0,0.65) !important;
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+    .fc .fc-memo-event .fc-event-title,
+    .fc .fc-memo-event .fc-event-main-frame {
+      color: #fff !important;
+      font-weight: 600;
+    }
+
+    /* ✅ 공휴일 이벤트: 글자만 심플하게 + 빨간색 */
+    .fc-holiday-text{
+      color:#d00;
+      font-weight:600;
+      font-size:12px;
+      line-height:1.1;
+      letter-spacing:-0.01em;
+      padding-left: 2px;
+    }
+
+    /* ✅ 공휴일 날짜 숫자만 빨간색 (지원 브라우저에서만) */
+    .fc-daygrid-day:has(.fc-holiday-event) .fc-daygrid-day-number {
+      color:#d00 !important;
+      font-weight:500;
+    }
+
+    /* ✅ 타이틀: 월 크게 + 년 작게 */
+    .fc .fc-toolbar-title{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+    }
+    .fc-title-month{
+      font-size:40px;
+      font-weight:800;
+      line-height:1;
+    }
+    .fc-title-year{
+      font-size:16px;
+      font-weight:600;
+      opacity:.75;
+      line-height:1;
+    }
+
+    /* ✅ 공휴일 이벤트: 글자만 빨간색, 배경 완전 제거 */
+      .fc-daygrid-event.fc-holiday-event,
+      .fc-daygrid-event.fc-holiday-event .fc-event-main,
+      .fc-daygrid-event.fc-holiday-event .fc-event-title {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        color: #d00 !important;
+        font-weight: 500 !important;
+        padding: 0 !important;
+      }
+
+      /* 혹시 라운드/칩이 남아있으면 제거 */
+      .fc-daygrid-event.fc-holiday-event {
+        border-radius: 0 !important;
+      }
+
+  </style>
+</head>
+
+<body>
+  <div id="calendar"></div>
+
+  <script>
+    const EVENTS_URL = "{% url 'leaves:events_api' %}";
+
+    function startOfToday() {
+      const d = new Date();
+      d.setHours(0,0,0,0);
+      return d;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: '100%',
+        contentHeight: 'auto',
+
+        events: EVENTS_URL,
+
+        headerToolbar: {
+          left: 'title',
+          center: '',
+          right: 'today prev,next'
+        },
+
+        datesSet: function(info) {
+          const d = new Date(info.view.currentStart);
+          const month = d.getMonth() + 1;
+          const year = d.getFullYear();
+
+          const titleEl = document.querySelector('.fc .fc-toolbar-title');
+          if (titleEl) {
+            titleEl.innerHTML = `
+              <span class="fc-title-month">${month}</span>
+              <span class="fc-title-year">${year}</span>
+            `;
+          }
+        },
+
+        dayMaxEventRows: 3,
+        moreLinkClick: 'popover',
+
+        dateClick: function(info) {
+          const today0 = startOfToday();
+          const clicked = new Date(info.date);
+          clicked.setHours(0,0,0,0);
+          if (clicked < today0) return;
+        },
+
+        dayCellClassNames: function(arg) {
+          const today0 = startOfToday();
+          const cell = new Date(arg.date);
+          cell.setHours(0,0,0,0);
+          if (cell < today0) return ['fc-past-soft'];
+          return [];
+        },
+
+        /* ✅ 핵심: 공휴일/메모는 따로 렌더링하고, 직원 이벤트만 기존 유지 */
+        eventContent: function(arg) {
+          const classes = arg.event.classNames || [];
+
+          // 1) 공휴일: 빨간 글자만 (칩 X)
+          if (classes.includes('fc-holiday-event')) {
+            return {
+              html: `<div class="fc-holiday-text">${arg.event.title}</div>`
+            };
+          }
+
+          // 2) 메모: 제목/내용 그대로(흰색) - 기존 class로 배경 적용됨
+          if (classes.includes('fc-memo-event')) {
+            // 메모는 title 자체가 "📝 ..." 형태라 그대로 출력
+            return {
+              html: `<div class="fc-emp-name" style="font-weight:600;">${arg.event.title}</div>`
+            };
+          }
+
+          // 3) 직원(연차/반차)
+          const isMobile = window.matchMedia('(max-width: 480px)').matches;
+          const wrap = document.createElement('div');
+          const half = arg.event.extendedProps.halfLabel;
+
+          if (!isMobile && half) {
+            const oneLine = document.createElement('div');
+            oneLine.className = 'fc-emp-name';
+            oneLine.textContent = `${arg.event.title}-${half}`;
+            wrap.appendChild(oneLine);
+            return { domNodes: [wrap] };
+          }
+
+          const nameEl = document.createElement('div');
+          nameEl.className = 'fc-emp-name';
+          nameEl.textContent = arg.event.title;
+          wrap.appendChild(nameEl);
+
+          if (half) {
+            const halfEl = document.createElement('div');
+            halfEl.textContent = half;
+            halfEl.className = 'fc-half-label';
+            wrap.appendChild(halfEl);
+          }
+
+          return { domNodes: [wrap] };
+        },
+      });
+
+      calendar.render();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{{ emp.name }} - {{ year }}</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR"; padding: 12px; }
+    .card { border:1px solid #eee; border-radius:12px; padding:12px; margin-bottom:12px; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#f2f2f2; margin:2px 4px 0 0; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; }
+    th { background:#fafafa; }
+  </style>
+</head>
+<body>
+  <p>
+    <a href="{% url 'leaves:calendar' %}">달력</a> |
+    <a href="{% url 'leaves:me_lookup' %}">다시 인증</a>
+  </p>
+
+  <h2>{{ emp.name }} ({{ year }})</h2>
+  <form method="get" style="margin: 12px 0; display:flex; gap:8px; align-items:center;">
+  <label for="yearSel" style="font-size:14px; color:#555;">년도</label>
+  <select id="yearSel" name="year"
+          style="padding:8px 10px; border:1px solid #ddd; border-radius:10px;"
+          onchange="this.form.submit()">
+    {% for y in years %}
+      <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- 버튼도 원하면 사용(자동 submit 싫으면 onchange 지우고 버튼만 쓰면 됨) -->
+  <noscript><button type="submit">이동</button></noscript>
+</form>
+
+
+  <div class="card">
+    <div>이월: <b>{{ leave_year.carry_over }}</b></div>
+    <div>올해 연차: <b>{{ leave_year.base_days }}</b></div>
+    <div>대체휴무 발생: <b>{{ comp_total }}</b></div>
+    <div><b>총연차수: {{ summary.total_grant }}</b></div>
+    {% if comp_grants %}
+      <div style="margin-top:6px;">
+        {% for g in comp_grants %}
+          <span class="pill">{{ g.worked_date|date:"m/d" }} {{ g.holiday_name }} (+{{ g.amount }})</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <hr/>
+    <div>대체 사용: <b>{{ used_comp }}</b></div>
+    <div>연차 사용: <b>{{ used_annual }}</b></div>
+    <div><b>총 잔여:</b> <b>{{ remain_total }}</b></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">사용 내역</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>기간</th>
+          <th>종류</th>
+          <th>차감(대체/연차)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+          <tr>
+            <td>
+              {{ r.start_date|date:"Y-m-d" }}
+              {% if r.end_date and r.end_date != r.start_date %} ~ {{ r.end_date|date:"Y-m-d" }}{% endif %}
+            </td>
+            <td>
+              {% if r.leave_type == "HALF" %}
+                반차({{ r.get_half_day_display }})
+              {% else %}
+                연차
+              {% endif %}
+            </td>
+            <td>{{ r.used_comp }} / {{ r.used_annual }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">내역이 없습니다.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
