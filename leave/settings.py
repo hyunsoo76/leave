@@ -28,7 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1',
     'localhost',
-    '192.168.0.236',]
+    '192.168.0.236',
+    '3.37.211.248']
 
 
 # Application definition
@@ -139,3 +140,7 @@ SITE_BASE_URL = os.environ.get("SITE_BASE_URL", "http://192.168.0.236:8000")  # 
 
 FORCE_SCRIPT_NAME = "/leave"
 STATIC_URL = "/leave/static/"
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://3.37.211.248",
+]
