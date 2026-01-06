@@ -139,3 +139,5 @@ STATIC_URL = "/leave/static/"
 CSRF_TRUSTED_ORIGINS = [
     "http://3.37.211.248",
 ]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
