@@ -141,3 +141,12 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# HTTPS 전환 전까지는 False 유지
+SECURE_SSL_REDIRECT = False
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+# iframe 사용하니까 유지
+X_FRAME_OPTIONS = "SAMEORIGIN"
