@@ -29,6 +29,7 @@ def send_telegram(text: str) -> bool:
         return True
 
     except Exception as e:
-        print("TELEGRAM EXCEPTION:", repr(e))
+        # print("TELEGRAM EXCEPTION:", repr(e))
+        raise RuntimeError(f"TELEGRAM EXCEPTION: {repr(e)}")
         return False
 
