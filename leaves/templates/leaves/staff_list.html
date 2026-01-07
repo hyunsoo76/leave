@@ -4,9 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
    {% load static %}
-  <link rel="icon" href="{% static 'favicon_blue.ico' %}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link rel="icon"
+          href="{% static 'favicon_blue.ico' %}?v=20260107"
+          type="image/x-icon">
+
+    <link rel="shortcut icon"
+          href="{% static 'favicon_blue.ico' %}?v=20260107"
+          type="image/x-icon">
+
+    <link rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="{% static 'favicon-32x32.png' %}">
+
+    <link rel="apple-touch-icon"
+          sizes="180x180"
+          href="{% static 'apple-touch-icon.png' %}">
+          
   <title>직원 연차 현황</title>
   <style>
     body{font-family:system-ui,-apple-system,"Noto Sans KR";padding:16px}
