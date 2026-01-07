@@ -114,6 +114,18 @@
     loading="lazy"
   ></iframe>
 </div>
+
+<form method="get" style="margin-bottom: 16px;">
+    <label for="year"><strong>연도:</strong></label>
+    <select name="year" id="year" onchange="this.form.submit()">
+        {% for y in year_range %}
+            <option value="{{ y }}" {% if y == year %}selected{% endif %}>
+                {{ y }}년
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
   <h2>직원 연차 현황 ({{ year }})</h2>
   <p style="margin-top:16px;">
     <a href="{% url 'leaves:calendar' %}">달력으로</a>

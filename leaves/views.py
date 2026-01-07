@@ -659,6 +659,12 @@ def staff_list(request):
 
     year = int(request.GET.get("year") or timezone.localdate().year)
 
+    # ✅ 추가 (원하는 범위로 조절 가능)
+    year_range = range(
+        timezone.localdate().year - 2,
+        timezone.localdate().year + 2
+    )
+
     employees = Employee.objects.filter(is_active=True).order_by("name")
     rows = []
     for emp in employees:
@@ -674,7 +680,7 @@ def staff_list(request):
         .order_by("-cnt", "holiday_name", "amount")
     )    
 
-    return render(request, "leaves/staff_list.html", {"rows": rows, "year": year, "comp_summary": comp_summary})
+    return render(request, "leaves/staff_list.html", {"rows": rows, "year": year, "year_range": year_range, "comp_summary": comp_summary})
 
 
 def staff_detail(request, employee_id: int):
