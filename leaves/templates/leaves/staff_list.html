@@ -162,7 +162,7 @@
         <td>{{ r.used_comp }}</td>
         <td>{{ r.used_annual }}</td>
         <td><b>{{ r.used_total }}</b></td>
-        <td><b>{{ r.remain }}</b></td>
+        <td><b>{{ r.remain|floatformat:1 }}</b></td>
       </tr>
       {% endfor %}
     </tbody>
