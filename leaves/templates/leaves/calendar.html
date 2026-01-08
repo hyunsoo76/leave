@@ -223,6 +223,56 @@
 </head>
 
 <body>
+  {% if copy_msg %}
+  <div id="copyBox" style="
+      border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin:12px 0;
+      background:#fffbe6;">
+    <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">
+      <b>✅ 신청 내용(카톡에 붙여넣기)</b>
+      <button type="button" onclick="copyToClipboard()"
+              style="padding:8px 10px; border:1px solid #ddd; border-radius:10px; background:#fff; cursor:pointer;">
+        복사
+      </button>
+    </div>
+
+    <textarea id="copyText" readonly
+              style="width:100%; margin-top:10px; min-height:130px; padding:10px; border:1px solid #ddd; border-radius:10px; font-size:14px;">{{ copy_msg }}</textarea>
+
+    <div id="copyHint" style="margin-top:8px; font-size:13px; color:#555;"></div>
+  </div>
+
+  <script>
+    function copyToClipboard() {
+      const txt = document.getElementById("copyText").value;
+
+      // 최신 브라우저
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(txt).then(() => {
+          document.getElementById("copyHint").innerText = "✅ 복사됨! 카톡에 붙여넣기 하세요.";
+        }).catch(() => fallbackCopy());
+      } else {
+        fallbackCopy();
+      }
+
+      function fallbackCopy() {
+        const ta = document.getElementById("copyText");
+        ta.focus();
+        ta.select();
+        try {
+          document.execCommand("copy");
+          document.getElementById("copyHint").innerText = "✅ 복사됨! 카톡에 붙여넣기 하세요.";
+        } catch (e) {
+          document.getElementById("copyHint").innerText = "복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요.";
+        }
+      }
+    }
+
+    // 페이지 뜨자마자 자동 선택(원하면)
+    // document.getElementById("copyText").select();
+  </script>
+{% endif %}
+
+
   <div id="calendar"></div>
 
   <!-- ===== Modal ===== -->
