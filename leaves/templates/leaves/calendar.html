@@ -242,30 +242,53 @@
   </div>
 
   <script>
-    function copyToClipboard() {
-      const txt = document.getElementById("copyText").value;
+  function copyToClipboard() {
+    const text = document.getElementById("copyText").value;
+    const btn = document.getElementById("copyBtn");
 
-      // 최신 브라우저
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(txt).then(() => {
-          document.getElementById("copyHint").innerText = "✅ 복사됨! 카톡에 붙여넣기 하세요.";
-        }).catch(() => fallbackCopy());
-      } else {
-        fallbackCopy();
-      }
+    function onSuccess() {
+      // 1️⃣ 버튼 텍스트 변경
+      btn.innerText = "복사됨!! ✅";
+      btn.disabled = true;
 
-      function fallbackCopy() {
-        const ta = document.getElementById("copyText");
-        ta.focus();
-        ta.select();
-        try {
-          document.execCommand("copy");
-          document.getElementById("copyHint").innerText = "✅ 복사됨! 카톡에 붙여넣기 하세요.";
-        } catch (e) {
-          document.getElementById("copyHint").innerText = "복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요.";
-        }
+      // 2️⃣ 잠깐 보여준 뒤 사라지기
+      setTimeout(() => {
+        hideCopyBox();
+      }, 900);
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text)
+        .then(onSuccess)
+        .catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+
+    function fallbackCopy() {
+      const ta = document.getElementById("copyText");
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand("copy");
+        onSuccess();
+      } catch (e) {
+        document.getElementById("copyHint").innerText =
+          "복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요.";
       }
     }
+
+    function hideCopyBox() {
+      const box = document.getElementById("copyBox");
+      box.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+      box.style.opacity = "0";
+      box.style.transform = "translateY(-6px)";
+      setTimeout(() => {
+        box.style.display = "none";
+      }, 400);
+    }
+  }
+</script>
 
     // 페이지 뜨자마자 자동 선택(원하면)
     // document.getElementById("copyText").select();
