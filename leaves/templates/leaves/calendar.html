@@ -218,6 +218,11 @@
           line-height:1;
         }
 
+        .only-mobile { display:none; }
+        @media (max-width: 768px) {
+          .only-mobile { display:inline-block; }
+        }
+
   
   </style>
 </head>
@@ -242,6 +247,7 @@
 
     <div style="margin-top:8px; display:flex; gap:8px;">
       <button onclick="copyText()" style="flex:1;">📋 복사</button>
+      <button type="button" class="only-mobile" onclick="shareText()" style="flex:1;">💬 공유</button>
     </div>
 
     <div id="copyStatus"
@@ -553,6 +559,31 @@
         box.remove();
       }, 2500);
     }
+
+    async function shareText() {
+    const textarea = document.getElementById("copyText");
+    const text = textarea ? textarea.value : "";
+    const status = document.getElementById("copyStatus");
+
+    // Web Share API 지원 여부
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "연차 신청",
+          text: text,
+          // url: location.href, // 필요하면 같이 공유
+        });
+        showStatus("공유창 열림 ✅");
+        autoHide(); // 공유 후 박스 숨기고 싶으면
+      } catch (e) {
+        // 사용자가 취소하면 에러로 들어오는 경우가 많음
+        showStatus("공유 취소됨");
+        // 취소는 굳이 autoHide 안 해도 됨
+      }
+    } else {
+      showStatus("이 기기에서는 공유 버튼이 지원되지 않아요. 복사를 사용해주세요.");
+    }
+  }
   
   </script>
 </body>
