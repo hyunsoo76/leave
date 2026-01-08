@@ -77,7 +77,14 @@
                 연차
               {% endif %}
             </td>
-            <td>{{ r.used_comp }} / {{ r.used_annual }}</td>
+            <td>
+              {{ r.used_comp }} / {{ r.used_annual }}
+              {% if r.reason %}
+                <span style="color:#777; font-size:12px; margin-left:8px;">
+                  사유: {{ r.reason }}
+                </span>
+              {% endif %}
+            </td>
           </tr>
         {% empty %}
           <tr><td colspan="3">내역이 없습니다.</td></tr>
