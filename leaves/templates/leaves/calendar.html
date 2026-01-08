@@ -225,75 +225,33 @@
 <body>
   {% if copy_msg %}
   <div id="copyBox" style="
-      border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin:12px 0;
-      background:#fffbe6;">
-    <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">
-      <b>✅ 신청 내용(카톡에 붙여넣기)</b>
-      <button type="button" onclick="copyToClipboard()"
-              style="padding:8px 10px; border:1px solid #ddd; border-radius:10px; background:#fff; cursor:pointer;">
-        복사
-      </button>
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    max-width: 90%;
+    z-index: 9999;
+  ">
+    <textarea id="copyText" readonly
+      style="width:100%; height:120px; font-size:13px;">{{ copy_msg }}</textarea>
+
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button onclick="copyText()" style="flex:1;">📋 복사</button>
     </div>
 
-    <textarea id="copyText" readonly
-              style="width:100%; margin-top:10px; min-height:130px; padding:10px; border:1px solid #ddd; border-radius:10px; font-size:14px;">{{ copy_msg }}</textarea>
-
-    <div id="copyHint" style="margin-top:8px; font-size:13px; color:#555;"></div>
+    <div id="copyStatus"
+         style="margin-top:6px; font-size:13px; color:#555; opacity:0; transition:opacity .5s;">
+    </div>
   </div>
+  {% endif %}
 
-  <script>
-  function copyToClipboard() {
-    const text = document.getElementById("copyText").value;
-    const btn = document.getElementById("copyBtn");
+  
 
-    function onSuccess() {
-      // 1️⃣ 버튼 텍스트 변경
-      btn.innerText = "복사됨!! ✅";
-      btn.disabled = true;
-
-      // 2️⃣ 잠깐 보여준 뒤 사라지기
-      setTimeout(() => {
-        hideCopyBox();
-      }, 900);
-    }
-
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text)
-        .then(onSuccess)
-        .catch(fallbackCopy);
-    } else {
-      fallbackCopy();
-    }
-
-    function fallbackCopy() {
-      const ta = document.getElementById("copyText");
-      ta.focus();
-      ta.select();
-      try {
-        document.execCommand("copy");
-        onSuccess();
-      } catch (e) {
-        document.getElementById("copyHint").innerText =
-          "복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요.";
-      }
-    }
-
-    function hideCopyBox() {
-      const box = document.getElementById("copyBox");
-      box.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-      box.style.opacity = "0";
-      box.style.transform = "translateY(-6px)";
-      setTimeout(() => {
-        box.style.display = "none";
-      }, 400);
-    }
-  }
-
-
-    // 페이지 뜨자마자 자동 선택(원하면)
-    // document.getElementById("copyText").select();
-  </script>
-{% endif %}
 
 
   <div id="calendar"></div>
@@ -498,6 +456,104 @@
       window.addEventListener('resize', () => calendar.updateSize());
     });
 
+        function copyToClipboard() {
+        const text = document.getElementById("copyText").value;
+        const btn = document.getElementById("copyBtn");
+
+        function onSuccess() {
+          // 1️⃣ 버튼 텍스트 변경
+          btn.innerText = "복사됨!! ✅";
+          btn.disabled = true;
+
+          // 2️⃣ 잠깐 보여준 뒤 사라지기
+          setTimeout(() => {
+            hideCopyBox();
+          }, 900);
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text)
+            .then(onSuccess)
+            .catch(fallbackCopy);
+        } else {
+          fallbackCopy();
+        }
+
+        function fallbackCopy() {
+          const ta = document.getElementById("copyText");
+          ta.focus();
+          ta.select();
+          try {
+            document.execCommand("copy");
+            onSuccess();
+          } catch (e) {
+            document.getElementById("copyHint").innerText =
+              "복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요.";
+          }
+        }
+
+        function hideCopyBox() {
+          const box = document.getElementById("copyBox");
+          box.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+          box.style.opacity = "0";
+          box.style.transform = "translateY(-6px)";
+          setTimeout(() => {
+            box.style.display = "none";
+          }, 400);
+        }
+      }
+
+          function copyText() {
+      const textarea = document.getElementById("copyText");
+      const status = document.getElementById("copyStatus");
+
+      // 기본 선택 복사 (HTTP에서도 동작)
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+
+      let success = false;
+      try {
+        success = document.execCommand("copy");
+      } catch (e) {
+        success = false;
+      }
+
+      if (success) {
+        showStatus("복사됨 ✅");
+        autoHide();
+      } else {
+        showStatus("복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요");
+      }
+    }
+
+    function showStatus(msg) {
+      const status = document.getElementById("copyStatus");
+      status.innerText = msg;
+      status.style.opacity = "1";
+    }
+
+    function autoHide() {
+      const box = document.getElementById("copyBox");
+      const status = document.getElementById("copyStatus");
+
+      // 1. 1.2초 후 상태 메시지 흐리게
+      setTimeout(() => {
+        status.style.opacity = "0";
+      }, 1200);
+
+      // 2. 2초 후 전체 박스 부드럽게 제거
+      setTimeout(() => {
+        box.style.transition = "opacity .6s, transform .6s";
+        box.style.opacity = "0";
+        box.style.transform = "translateX(-50%) translateY(-10px)";
+      }, 1800);
+
+      // 3. DOM 제거
+      setTimeout(() => {
+        box.remove();
+      }, 2500);
+    }
+  
   </script>
 </body>
 </html>
