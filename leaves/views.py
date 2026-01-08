@@ -32,7 +32,8 @@ from .utils.telegram import send_telegram
 from django.conf import settings
 
 def calendar_view(request):
-    return render(request, "leaves/calendar.html")
+    copy_msg = request.session.pop("copy_msg", None)  # ✅ 한번만 보여주기
+    return render(request, "leaves/calendar.html", {"copy_msg": copy_msg})
 
 
 def events_api(request):
@@ -307,6 +308,8 @@ def request_new(request):
                 f"- 달력: {calendar_url}"
             )
             send_telegram(msg)
+            # ✅ 복사할 문구를 세션에 담아두기 (다음 페이지에서 1회 표시)
+            request.session["copy_msg"] = msg
 
 
             messages.success(request, "휴무 신청이 완료되었습니다.")
