@@ -223,6 +223,32 @@
           .only-mobile { display:inline-block; }
         }
 
+        /* ✅ 관리자 메모 이벤트(📝) 스타일 */
+        .fc .fc-memo-event {
+          background: #1b7f3a !important; /* 녹색 박스 */
+          border: 1px solid #1b7f3a !important;
+          color: #b9ffb9 !important;      /* 연두색 글씨 */
+        }
+
+        /* 제목/시간 등 내부 텍스트도 확실히 연두색으로 */
+        .fc .fc-memo-event .fc-event-title,
+        .fc .fc-memo-event .fc-event-time,
+        .fc .fc-memo-event a {
+          color: #b9ffb9 !important;
+        }
+
+        /* (선택) 살짝 둥글게 + 패딩 */
+        .fc .fc-memo-event {
+          border-radius: 8px !important;
+          padding: 2px 6px !important;
+        }
+
+        /* (선택) 호버 시 조금 밝게 */
+        .fc .fc-memo-event:hover {
+          filter: brightness(1.1);
+        }
+
+
   
   </style>
 </head>
