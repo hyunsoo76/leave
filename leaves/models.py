@@ -155,3 +155,22 @@ class CalendarMemo(models.Model):
 
     def __str__(self):
         return f"{self.memo_date} - {self.title}"
+    
+class CalendarMemo(models.Model):
+    memo_date = models.DateField()
+    title = models.CharField(max_length=100)
+    content = models.TextField(blank=True)
+
+    COLOR_CHOICES = [
+        ("green", "녹색"),
+        ("blue", "파랑"),
+        ("yellow", "노랑"),
+        ("red", "빨강"),
+        ("gray", "회색"),
+    ]
+
+    color = models.CharField(
+        max_length=10,
+        choices=COLOR_CHOICES,
+        default="green"
+    )
