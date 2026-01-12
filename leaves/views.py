@@ -1008,7 +1008,7 @@ def memo_new(request):
                 obj.save(update_fields=["content"])
 
             messages.success(request, "메모가 저장되었습니다.")
-            return redirect(f"{reverse('leaves:staff_summary')}?year={timezone.now().year}")
+            return redirect("/leave/manage/summary/")
     else:
         form = CalendarMemoForm(initial=initial)
 
