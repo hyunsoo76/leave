@@ -203,6 +203,22 @@
         box-shadow: none !important;
       }
 
+            /* 기본(혹시 color 없을 때) */
+      .fc .fc-memo-event { border-radius: 8px !important; padding: 2px 6px !important; }
+
+      /* 색상별 */
+      .fc .memo-green { background:#1b7f3a !important; border-color:#1b7f3a !important; color:#b9ffb9 !important; }
+      .fc .memo-blue  { background:#1455c0 !important; border-color:#1455c0 !important; color:#d6e6ff !important; }
+      .fc .memo-yellow{ background:#caa300 !important; border-color:#caa300 !important; color:#fff7c2 !important; }
+      .fc .memo-red   { background:#b82121 !important; border-color:#b82121 !important; color:#ffd2d2 !important; }
+      .fc .memo-gray  { background:#333 !important;    border-color:#333 !important;    color:#eaeaea !important; }
+
+      /* 내부 글자도 따라가게 */
+      .fc .fc-memo-event .fc-event-title,
+      .fc .fc-memo-event .fc-event-time,
+      .fc .fc-memo-event a { color: inherit !important; }
+
+
   </style>
 </head>
 
