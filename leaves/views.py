@@ -83,7 +83,7 @@ def events_api(request):
         # allDay 이벤트는 end를 다음날로
         events.append({
             "id": f"memo-{m.id}",
-            "title": f"📝 {m.title}: {m.content}",
+            "title": f"{m.title}: {m.content}",
             "start": m.memo_date.isoformat(),
             "end": (m.memo_date + timedelta(days=1)).isoformat(),
             "allDay": True,

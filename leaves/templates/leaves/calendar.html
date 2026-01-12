@@ -223,28 +223,27 @@
           .only-mobile { display:inline-block; }
         }
 
-        /* ===== 🔥 관리자 메모 최종 덮어쓰기 (무조건 이김) ===== */
-        .fc .fc-memo-event,
-        .fc .fc-memo-event .fc-event-main,
-        .fc .fc-memo-event .fc-event-main-frame,
-        .fc .fc-memo-event .fc-event-title-container {
-          background-color: #1b7f3a !important;   /* 녹색 박스 */
+        /* ===== 메모 최종 스타일 (검정 완전 제거) ===== */
+        .fc-daygrid-event.fc-memo-event,
+        .fc-daygrid-event.fc-memo-event .fc-event-main,
+        .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
+        .fc-daygrid-event.fc-memo-event .fc-event-title-container {
+          background-color: #1b7f3a !important;
           border-color: #1b7f3a !important;
         }
 
-        .fc .fc-memo-event .fc-event-title,
-        .fc .fc-memo-event .fc-event-time,
-        .fc .fc-memo-event a {
-          color: #b9ffb9 !important;   /* 연두색 글씨 */
+        .fc-daygrid-event.fc-memo-event .fc-event-title,
+        .fc-daygrid-event.fc-memo-event .fc-event-time {
+          color: #b9ffb9 !important;
           font-weight: 700 !important;
         }
 
-        /* 둥글고 예쁘게 */
-        .fc .fc-memo-event {
+        /* 말풍선 모양 제거 */
+        .fc-daygrid-event.fc-memo-event {
           border-radius: 8px !important;
           padding: 2px 6px !important;
-        }
-  
+          box-shadow: none !important;
+          
   </style>
 </head>
 
