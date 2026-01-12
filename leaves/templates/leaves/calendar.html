@@ -223,27 +223,95 @@
           .only-mobile { display:inline-block; }
         }
 
-        /* ===== 메모 최종 스타일 (검정 완전 제거) ===== */
-        .fc-daygrid-event.fc-memo-event,
-        .fc-daygrid-event.fc-memo-event .fc-event-main,
-        .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
-        .fc-daygrid-event.fc-memo-event .fc-event-title-container {
-          background-color: #1b7f3a !important;
-          border-color: #1b7f3a !important;
-        }
-
-        .fc-daygrid-event.fc-memo-event .fc-event-title,
-        .fc-daygrid-event.fc-memo-event .fc-event-time {
-          color: #b9ffb9 !important;
-          font-weight: 700 !important;
-        }
-
-        /* 말풍선 모양 제거 */
+                /* ===== 1) 메모 공통 모양 (색상은 아래 memo-*가 담당) ===== */
         .fc-daygrid-event.fc-memo-event {
           border-radius: 8px !important;
           padding: 2px 6px !important;
           box-shadow: none !important;
-        }  
+          cursor: default !important;
+        }
+
+        /* FullCalendar가 기본으로 넣는 검정/회색 배경이 끼어들면 제거 */
+        .fc-daygrid-event.fc-memo-event,
+        .fc-daygrid-event.fc-memo-event .fc-event-main,
+        .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
+        .fc-daygrid-event.fc-memo-event .fc-event-title-container {
+          background: transparent !important;
+          border-color: transparent !important;
+        }
+
+        /* 제목/시간 공통(기본값) - 색상별에서 덮어씀 */
+        .fc-daygrid-event.fc-memo-event .fc-event-title,
+        .fc-daygrid-event.fc-memo-event .fc-event-time {
+          font-weight: 700 !important;
+        }
+
+        /* ===== 2) 메모 색상별 ===== */
+
+        /* GREEN */
+        .fc-daygrid-event.fc-memo-event.memo-green,
+        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main,
+        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main-frame,
+        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title-container {
+          background-color: #1b7f3a !important;
+          border-color: #1b7f3a !important;
+        }
+        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title,
+        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-time {
+          color: #b9ffb9 !important;
+        }
+
+        /* BLUE */
+        .fc-daygrid-event.fc-memo-event.memo-blue,
+        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main,
+        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main-frame,
+        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title-container {
+          background-color: #1e5bb8 !important;
+          border-color: #1e5bb8 !important;
+        }
+        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title,
+        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-time {
+          color: #e9f1ff !important;
+        }
+
+        /* YELLOW */
+        .fc-daygrid-event.fc-memo-event.memo-yellow,
+        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main,
+        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main-frame,
+        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title-container {
+          background-color: #b58a00 !important;
+          border-color: #b58a00 !important;
+        }
+        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title,
+        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-time {
+          color: #111 !important;
+        }
+
+        /* RED */
+        .fc-daygrid-event.fc-memo-event.memo-red,
+        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main,
+        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main-frame,
+        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title-container {
+          background-color: #b11f2a !important;
+          border-color: #b11f2a !important;
+        }
+        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title,
+        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-time {
+          color: #fff !important;
+        }
+
+        /* GRAY */
+        .fc-daygrid-event.fc-memo-event.memo-gray,
+        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-main,
+        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-main-frame,
+        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-title-container {
+          background-color: #555 !important;
+          border-color: #555 !important;
+        }
+        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-title,
+        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-time {
+          color: #fff !important;
+        }
   </style>
 </head>
 
