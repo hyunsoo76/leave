@@ -87,7 +87,7 @@ def events_api(request):
             "start": m.memo_date.isoformat(),
             "end": (m.memo_date + timedelta(days=1)).isoformat(),
             "allDay": True,
-            "classNames": ["fc-memo-event"],
+            "classNames": ["fc-memo-event", f"memo-{m.color}"],
             "editable": False,
         })
 
