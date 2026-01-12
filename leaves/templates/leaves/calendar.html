@@ -312,6 +312,36 @@
         .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-time {
           color: #fff !important;
         }
+                
+              /* ===== 모바일에서 이벤트 3줄 제한 ===== */
+      @media (max-width: 768px) {
+        .fc .fc-daygrid-event .fc-event-title {
+          display: -webkit-box;
+          display: box;               /* fallback */
+          -webkit-box-orient: vertical;
+          box-orient: vertical;
+
+          -webkit-line-clamp: 3;
+          line-clamp: 3;              /* ✅ 표준 속성 */
+
+          overflow: hidden;
+          white-space: normal;
+          text-overflow: ellipsis;
+
+          line-height: 1.15;
+          font-size: 11px;
+        }
+
+        .fc .fc-daygrid-event {
+          padding: 2px 4px;
+        }
+
+        .fc-daygrid-day-frame {
+          min-height: 70px;
+        }
+      }
+
+
   </style>
 </head>
 
@@ -540,6 +570,20 @@
 
             return { domNodes: [wrap] };
           },
+          // ✅ 툴팁 (title 속성)
+        eventDidMount: function(info) {
+          const e = info.event;
+          const p = e.extendedProps || {};
+
+          // 메모 이벤트
+          if (String(e.id).startsWith("memo-")) {
+            // title에 이미 "제목:내용" 형태로 넣고 있으니 그대로 쓰거나
+            // content 따로 쓰고 싶으면 extendedProps에 넣어야 함
+            info.el.setAttribute("title", e.title);
+          } else if (p.halfLabel) {
+            info.el.setAttribute("title", `${e.title} (${p.halfLabel})`);
+          }
+        },
 
       });
 
@@ -672,7 +716,6 @@
       showStatus("이 기기에서는 공유 버튼이 지원되지 않아요. 복사를 사용해주세요.");
     }
   }
-  
   </script>
 </body>
 </html>
