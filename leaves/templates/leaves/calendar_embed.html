@@ -116,7 +116,7 @@
       .fc .fc-button { padding: 6px 10px; font-size: 13px; }
     }
 
-    /* 메모 이벤트(회색 계열) */
+    /* 메모 이벤트(회색 계열)
     .fc .fc-memo-event,
     .fc .fc-memo-event .fc-event-main {
       background: rgba(0,0,0,0.65) !important;
@@ -128,7 +128,7 @@
     .fc .fc-memo-event .fc-event-main-frame {
       color: #fff !important;
       font-weight: 600;
-    }
+    } */
 
     /* ✅ 공휴일 이벤트: 글자만 심플하게 + 빨간색 */
     .fc-holiday-text{
@@ -179,6 +179,28 @@
       /* 혹시 라운드/칩이 남아있으면 제거 */
       .fc-daygrid-event.fc-holiday-event {
         border-radius: 0 !important;
+      }
+
+      /* ===== 메모 최종 스타일 (검정 완전 제거) ===== */
+      .fc-daygrid-event.fc-memo-event,
+      .fc-daygrid-event.fc-memo-event .fc-event-main,
+      .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event .fc-event-title-container {
+        background-color: #1b7f3a !important;
+        border-color: #1b7f3a !important;
+      }
+
+      .fc-daygrid-event.fc-memo-event .fc-event-title,
+      .fc-daygrid-event.fc-memo-event .fc-event-time {
+        color: #b9ffb9 !important;
+        font-weight: 700 !important;
+      }
+
+      /* 말풍선 모양 제거 */
+      .fc-daygrid-event.fc-memo-event {
+        border-radius: 8px !important;
+        padding: 2px 6px !important;
+        box-shadow: none !important;
       }
 
   </style>
