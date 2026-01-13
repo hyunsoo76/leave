@@ -286,6 +286,29 @@
       .fc .fc-memo-event .fc-event-time,
       .fc .fc-memo-event a { color: inherit !important; }
 
+            /* ===== 임베디드: 메모는 짤림 없이 전부 표시 ===== */
+
+      /* 메모 이벤트 자체가 높이/overflow 때문에 잘리는 걸 방지 */
+      .fc .fc-daygrid-event.fc-memo-event,
+      .fc .fc-daygrid-event.fc-memo-event .fc-event-main,
+      .fc .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
+      .fc .fc-daygrid-event.fc-memo-event .fc-event-title-container {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+
+      /* 메모 텍스트(너는 fc-emp-name으로 출력 중): 줄바꿈 + 줄임표 금지 */
+      .fc .fc-daygrid-event.fc-memo-event .fc-emp-name {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        display: block !important;
+        line-height: 1.15 !important;
+        word-break: break-word !important;
+      }
+
+
 
   </style>
 </head>
