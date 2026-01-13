@@ -401,321 +401,282 @@
     </div>
   </div>
 
-  <script>
-    const EVENTS_URL = "{% url 'leaves:events_api' %}";
-    const REQUEST_NEW_URL = "{% url 'leaves:request_new' %}";
+<script>
+  const EVENTS_URL = "{% url 'leaves:events_api' %}";
+  const REQUEST_NEW_URL = "{% url 'leaves:request_new' %}";
 
-    // ===== Modal helpers =====
-    const backdrop = document.getElementById('authModalBackdrop');
-    const selectedDateText = document.getElementById('selectedDateText');
-    const birthInput = document.getElementById('birthInput');
-    const authError = document.getElementById('authError');
-    const btnCancel = document.getElementById('btnCancel');
-    const btnOk = document.getElementById('btnOk');
+  // ===== Modal helpers =====
+  const backdrop = document.getElementById("authModalBackdrop");
+  const selectedDateText = document.getElementById("selectedDateText");
+  const birthInput = document.getElementById("birthInput");
+  const authError = document.getElementById("authError");
+  const btnCancel = document.getElementById("btnCancel");
+  const btnOk = document.getElementById("btnOk");
 
-    let selectedDateStr = null;
+  let selectedDateStr = null;
 
-    function openAuthModal(dateStr) {
-      selectedDateStr = dateStr;
-      selectedDateText.textContent = dateStr;
-      authError.textContent = '';
-      birthInput.value = '';
-      backdrop.style.display = 'flex';
-      backdrop.setAttribute('aria-hidden', 'false');
-      setTimeout(() => birthInput.focus(), 50);
+  function openAuthModal(dateStr) {
+    selectedDateStr = dateStr;
+    selectedDateText.textContent = dateStr;
+    authError.textContent = "";
+    birthInput.value = "";
+    backdrop.style.display = "flex";
+    backdrop.setAttribute("aria-hidden", "false");
+    setTimeout(() => birthInput.focus(), 50);
+  }
+
+  function closeAuthModal() {
+    backdrop.style.display = "none";
+    backdrop.setAttribute("aria-hidden", "true");
+    selectedDateStr = null;
+  }
+
+  function goRequestNew() {
+    const birth = birthInput.value.trim();
+    if (!selectedDateStr) return;
+
+    if (!/^\d{6}$/.test(birth)) {
+      authError.textContent = "생년월일 6자리 숫자로 입력해주세요. (예: 760910)";
+      birthInput.focus();
+      return;
     }
 
-    function closeAuthModal() {
-      backdrop.style.display = 'none';
-      backdrop.setAttribute('aria-hidden', 'true');
-      selectedDateStr = null;
+    window.location.href = `${REQUEST_NEW_URL}?date=${encodeURIComponent(
+      selectedDateStr
+    )}&birth=${encodeURIComponent(birth)}`;
+  }
+
+  btnCancel.addEventListener("click", closeAuthModal);
+  btnOk.addEventListener("click", goRequestNew);
+
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) closeAuthModal();
+  });
+
+  birthInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") goRequestNew();
+    if (e.key === "Escape") closeAuthModal();
+  });
+
+  // ===== FullCalendar =====
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendarEl = document.getElementById("calendar");
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+
+      // ✅ 모바일은 3줄만(클릭하면 popover로), PC는 4줄
+      dayMaxEventRows: window.matchMedia("(max-width: 480px)").matches ? 3 : 4,
+      moreLinkClick: "popover",
+
+      // ✅ 달력이 "덜 커지게" 만드는 옵션
+      aspectRatio: 2.05,
+      height: "auto",
+
+      events: EVENTS_URL,
+
+      headerToolbar: {
+        left: "title",
+        center: "",
+        right: "myLeave today prev,next",
+      },
+
+      customButtons: {
+        myLeave: {
+          text: "내 연차 보기",
+          click: function () {
+            window.location.href = "{% url 'leaves:me_lookup' %}";
+          },
+        },
+      },
+
+      buttonText: { today: "today" },
+
+      datesSet: function (info) {
+        const d = new Date(info.view.currentStart);
+        const month = d.getMonth() + 1;
+        const year = d.getFullYear();
+
+        const titleEl = document.querySelector(".fc .fc-toolbar-title");
+        if (titleEl) {
+          titleEl.innerHTML = `
+            <span class="fc-title-month">${month}</span>
+            <span class="fc-title-year">${year}</span>
+          `;
+        }
+      },
+
+      dateClick: function (info) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const clicked = new Date(info.dateStr);
+        if (clicked < today) {
+          alert("과거 날짜에는 연차를 신청할 수 없습니다.");
+          return;
+        }
+
+        openAuthModal(info.dateStr);
+      },
+
+      dayCellDidMount: function (arg) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const cellDate = new Date(arg.date);
+        cellDate.setHours(0, 0, 0, 0);
+
+        if (cellDate < today) {
+          arg.el.style.backgroundColor = "rgba(0,0,0,0.03)";
+        }
+      },
+
+      // ✅ 괄호 제거 + 오전/오후 흰색 표시
+      eventContent: function (arg) {
+        const isMobile = window.matchMedia("(max-width: 480px)").matches;
+
+        const wrap = document.createElement("div");
+        wrap.style.lineHeight = "1.15";
+
+        const half = arg.event.extendedProps.halfLabel; // "오전"/"오후"/""
+
+        if (!isMobile && half) {
+          // ✅ PC: 한 줄 "이름-오전"
+          const oneLine = document.createElement("div");
+          oneLine.textContent = `${arg.event.title}-${half}`;
+          wrap.appendChild(oneLine);
+          return { domNodes: [wrap] };
+        }
+
+        // ✅ 모바일(또는 half 없음): 이름 / 아래 라벨
+        const name = document.createElement("div");
+        name.textContent = arg.event.title;
+        wrap.appendChild(name);
+
+        if (half) {
+          const sub = document.createElement("div");
+          sub.textContent = half;
+          sub.className = "fc-half-label";
+          wrap.appendChild(sub);
+        }
+
+        return { domNodes: [wrap] };
+      },
+
+      // ✅ [수정] eventDidMount를 "옵션 객체 안"으로 이동 (Identifier expected 해결)
+      eventDidMount: function (info) {
+        const e = info.event;
+        const p = e.extendedProps || {};
+
+        // 메모 이벤트: 일단 title만 툴팁
+        if (String(e.id).startsWith("memo-")) {
+          info.el.setAttribute("title", e.title);
+        } else if (p.halfLabel) {
+          info.el.setAttribute("title", `${e.title} (${p.halfLabel})`);
+        }
+      },
+    });
+
+    calendar.render();
+
+    setTimeout(() => calendar.updateSize(), 0);
+    window.addEventListener("resize", () => calendar.updateSize());
+  });
+
+  // ===== Copy / Share (정리) =====
+  // ✅ [수정] copyToClipboard/copyText 중복 제거 → copyText 하나만 사용
+  function copyText() {
+    const textarea = document.getElementById("copyText");
+    const status = document.getElementById("copyStatus");
+    const box = document.getElementById("copyBox");
+    if (!textarea) return;
+
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+
+    let success = false;
+    try {
+      success = document.execCommand("copy");
+    } catch (e) {
+      success = false;
     }
 
-    function goRequestNew() {
-      const birth = birthInput.value.trim();
-      if (!selectedDateStr) return;
-
-      if (!/^\d{6}$/.test(birth)) {
-        authError.textContent = '생년월일 6자리 숫자로 입력해주세요. (예: 760910)';
-        birthInput.focus();
-        return;
-      }
-
-      window.location.href =
-        `${REQUEST_NEW_URL}?date=${encodeURIComponent(selectedDateStr)}&birth=${encodeURIComponent(birth)}`;
-    }
-
-    btnCancel.addEventListener('click', closeAuthModal);
-    btnOk.addEventListener('click', goRequestNew);
-
-    backdrop.addEventListener('click', (e) => {
-      if (e.target === backdrop) closeAuthModal();
-    });
-
-    birthInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') goRequestNew();
-      if (e.key === 'Escape') closeAuthModal();
-    });
-
-    // ===== FullCalendar =====
-    document.addEventListener('DOMContentLoaded', function () {
-      const calendarEl = document.getElementById('calendar');
-
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        dayMaxEventRows: 4,
-        moreLinkClick: 'popover',
-
-        /* ✅ 여기! 달력이 "덜 커지게" 만드는 핵심 옵션 */
-        aspectRatio: 2.05,   // 숫자 ↑ = 더 납작(세로 덜 씀). 1.8~2.2 사이에서 취향대로
-
-        height: 'auto',
-        events: EVENTS_URL,
-
-        headerToolbar: {
-          left: 'title',
-          center: '',
-          right: 'myLeave today prev,next'
-        },
-
-        customButtons: {
-          customTitle: {
-            text: '',   // 실제 텍스트는 JS로 주입
-          },
-          myLeave: {
-            text: '내 연차 보기',
-            click: function () {
-              window.location.href = "{% url 'leaves:me_lookup' %}";
-            }
-          }
-        },
-
-        buttonText: { today: 'today' },
-
-        datesSet: function(info) {
-            // currentStart는 "현재 달력 화면의 시작 주"라서 월이 어긋날 수 있음
-            // title에 표시되는 달은 view의 activeStart/currentStart보다
-            // view의 currentStart를 쓰면 가끔 전월로 보일 수 있어서,
-            // "현재 view의 중심 달"을 안정적으로 잡기 위해 info.view.currentStart를 보정
-            const d = new Date(info.view.currentStart);
-
-            // ✅ 표시할 달(숫자) / 년도
-            const month = d.getMonth() + 1;   // 1~12
-            const year = d.getFullYear();
-
-            const titleEl = document.querySelector('.fc .fc-toolbar-title');
-            if (titleEl) {
-              titleEl.innerHTML = `
-                <span class="fc-title-month">${month}</span>
-                <span class="fc-title-year">${year}</span>
-              `;
-            }
-          },
-
-        dateClick: function(info) {
-          const today = new Date();
-          today.setHours(0,0,0,0);          // 오늘 00:00 기준
-          const clicked = new Date(info.dateStr);
-
-          if (clicked < today) {
-            alert('과거 날짜에는 연차를 신청할 수 없습니다.');
-            return;                         // ❌ 여기서 종료
-          }
-
-        openAuthModal(info.dateStr);      // ✅ 오늘 이후만 허용
-          },
-        
-        dayCellDidMount: function(arg) {
-            const today = new Date();
-            today.setHours(0,0,0,0);
-
-            const cellDate = new Date(arg.date);
-            cellDate.setHours(0,0,0,0);
-
-            if (cellDate < today) {
-              // 배경만 살짝
-              arg.el.style.backgroundColor = 'rgba(0,0,0,0.03)';
-            }
-          },  
-
-
-        // ✅ 괄호 제거 + 오전/오후 흰색
-        eventContent: function(arg) {
-            const isMobile = window.matchMedia('(max-width: 480px)').matches;
-
-            const wrap = document.createElement('div');
-            wrap.style.lineHeight = '1.15';
-
-            const half = arg.event.extendedProps.halfLabel; // "오전"/"오후"/""
-
-            if (!isMobile && half) {
-              // ✅ PC: 한 줄 "이름-오전"
-              const oneLine = document.createElement('div');
-              oneLine.textContent = `${arg.event.title}-${half}`;
-              wrap.appendChild(oneLine);
-              return { domNodes: [wrap] };
-            }
-
-            // ✅ 모바일(또는 half 없음): 기존 그대로 (이름 / 아래 라벨)
-            const name = document.createElement('div');
-            name.textContent = arg.event.title;
-            wrap.appendChild(name);
-
-            if (half) {
-              const sub = document.createElement('div');
-              sub.textContent = half;
-              sub.className = 'fc-half-label';
-              wrap.appendChild(sub);
-            }
-
-            return { domNodes: [wrap] };
-          },
-          // ✅ 툴팁 (title 속성)
-        eventDidMount: function(info) {
-          const e = info.event;
-          const p = e.extendedProps || {};
-
-          // 메모 이벤트
-          if (String(e.id).startsWith("memo-")) {
-            // title에 이미 "제목:내용" 형태로 넣고 있으니 그대로 쓰거나
-            // content 따로 쓰고 싶으면 extendedProps에 넣어야 함
-            info.el.setAttribute("title", e.title);
-          } else if (p.halfLabel) {
-            info.el.setAttribute("title", `${e.title} (${p.halfLabel})`);
-          }
-        },
-
-      });
-
-      calendar.render();
-
-      // 렌더 직후 폭 계산 보정 (간헐적 틀어짐 방지)
-      setTimeout(() => calendar.updateSize(), 0);
-      window.addEventListener('resize', () => calendar.updateSize());
-    });
-
-        function copyToClipboard() {
-        const text = document.getElementById("copyText").value;
-        const btn = document.getElementById("copyBtn");
-
-        function onSuccess() {
-          // 1️⃣ 버튼 텍스트 변경
-          btn.innerText = "복사됨!! ✅";
-          btn.disabled = true;
-
-          // 2️⃣ 잠깐 보여준 뒤 사라지기
-          setTimeout(() => {
-            hideCopyBox();
-          }, 900);
-        }
-
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(text)
-            .then(onSuccess)
-            .catch(fallbackCopy);
-        } else {
-          fallbackCopy();
-        }
-
-        function fallbackCopy() {
-          const ta = document.getElementById("copyText");
-          ta.focus();
-          ta.select();
-          try {
-            document.execCommand("copy");
-            onSuccess();
-          } catch (e) {
-            document.getElementById("copyHint").innerText =
-              "복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요.";
-          }
-        }
-
-        function hideCopyBox() {
-          const box = document.getElementById("copyBox");
-          box.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-          box.style.opacity = "0";
-          box.style.transform = "translateY(-6px)";
-          setTimeout(() => {
-            box.style.display = "none";
-          }, 400);
-        }
-      }
-
-          function copyText() {
-      const textarea = document.getElementById("copyText");
-      const status = document.getElementById("copyStatus");
-
-      // 기본 선택 복사 (HTTP에서도 동작)
-      textarea.select();
-      textarea.setSelectionRange(0, 99999);
-
-      let success = false;
-      try {
-        success = document.execCommand("copy");
-      } catch (e) {
-        success = false;
-      }
-
-      if (success) {
-        showStatus("복사됨 ✅");
-        autoHide();
-      } else {
-        showStatus("복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요");
-      }
+    if (success) {
+      showStatus("복사됨 ✅");
+      autoHide(box);
+    } else {
+      showStatus("복사 실패 😥 텍스트를 길게 눌러 직접 복사하세요");
     }
 
     function showStatus(msg) {
-      const status = document.getElementById("copyStatus");
+      if (!status) return;
       status.innerText = msg;
       status.style.opacity = "1";
     }
 
-    function autoHide() {
-      const box = document.getElementById("copyBox");
-      const status = document.getElementById("copyStatus");
+    function autoHide(el) {
+      if (!el) return;
 
-      // 1. 1.2초 후 상태 메시지 흐리게
       setTimeout(() => {
-        status.style.opacity = "0";
+        if (status) status.style.opacity = "0";
       }, 1200);
 
-      // 2. 2초 후 전체 박스 부드럽게 제거
       setTimeout(() => {
-        box.style.transition = "opacity .6s, transform .6s";
-        box.style.opacity = "0";
-        box.style.transform = "translateX(-50%) translateY(-10px)";
+        el.style.transition = "opacity .6s, transform .6s";
+        el.style.opacity = "0";
+        el.style.transform = "translateX(-50%) translateY(-10px)";
       }, 1800);
 
-      // 3. DOM 제거
       setTimeout(() => {
-        box.remove();
+        if (el && el.parentNode) el.parentNode.removeChild(el);
       }, 2500);
     }
+  }
 
-    async function shareText() {
+  async function shareText() {
     const textarea = document.getElementById("copyText");
     const text = textarea ? textarea.value : "";
     const status = document.getElementById("copyStatus");
+    const box = document.getElementById("copyBox");
 
-    // Web Share API 지원 여부
+    function showStatus(msg) {
+      if (!status) return;
+      status.innerText = msg;
+      status.style.opacity = "1";
+    }
+
+    function autoHide(el) {
+      if (!el) return;
+      setTimeout(() => {
+        if (status) status.style.opacity = "0";
+      }, 1200);
+      setTimeout(() => {
+        el.style.transition = "opacity .6s, transform .6s";
+        el.style.opacity = "0";
+        el.style.transform = "translateX(-50%) translateY(-10px)";
+      }, 1800);
+      setTimeout(() => {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      }, 2500);
+    }
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: "연차 신청",
           text: text,
-          // url: location.href, // 필요하면 같이 공유
         });
         showStatus("공유창 열림 ✅");
-        autoHide(); // 공유 후 박스 숨기고 싶으면
+        autoHide(box);
       } catch (e) {
-        // 사용자가 취소하면 에러로 들어오는 경우가 많음
         showStatus("공유 취소됨");
-        // 취소는 굳이 autoHide 안 해도 됨
       }
     } else {
       showStatus("이 기기에서는 공유 버튼이 지원되지 않아요. 복사를 사용해주세요.");
     }
   }
-  </script>
+</script>
+
 </body>
 </html>
