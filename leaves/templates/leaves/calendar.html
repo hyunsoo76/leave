@@ -313,62 +313,50 @@
           color: #fff !important;
         }
                 
-                /* ===== 메모 제목 말줄임 (웹 1줄 / 모바일 2줄) ===== */
+                /* ===== 메모: 웹은 전체 표시 / 모바일만 2줄 + 아래쪽 … 표시 ===== */
 
-        /* 1) 텍스트 줄수 제한 */
+        /* ✅ 웹(PC): 줄임/말줄임 해제 (그냥 다 보이게) */
         @media (min-width: 769px) {
           .fc-daygrid-event.fc-memo-event .fc-event-title {
-            white-space: nowrap !important;   /* 웹: 1줄 */
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
             display: block !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+          }
+
+          /* 웹에서는 … 표시 안 함 */
+          .fc-daygrid-event.fc-memo-event::after {
+            content: "" !important;
           }
         }
 
+        /* ✅ 모바일: 2줄까지만 표시 */
         @media (max-width: 768px) {
           .fc-daygrid-event.fc-memo-event .fc-event-title {
             display: -webkit-box !important;
             -webkit-box-orient: vertical !important;
-            -webkit-line-clamp: 2 !important; /* 모바일: 2줄 */
-            line-clamp: 2 !important;         /* 표준 */
+            -webkit-line-clamp: 2 !important;
+            line-clamp: 2 !important;
             overflow: hidden !important;
             white-space: normal !important;
             text-overflow: ellipsis !important;
-            font-size: 11px;
           }
-        }
 
-        /* 2) 클릭 유도용 … 은 "제목"이 아니라 "이벤트 전체"에 붙여야 안 잘림 */
-        .fc-daygrid-event.fc-memo-event {
-          position: relative;
-          cursor: pointer !important; /* 메모는 클릭됨 */
-        }
+          /* ✅ … 를 "타이틀 뒤"가 아니라 "2줄 아래(박스 하단)"에 따로 표시 */
+          .fc-daygrid-event.fc-memo-event {
+            position: relative;
+            padding-bottom: 12px !important;   /* 아래 … 자리 확보 */
+            cursor: pointer !important;
+          }
 
-        /* 항상 … 붙이기(간단/확실) */
-        .fc-daygrid-event.fc-memo-event::after {
-          content: " …";
-          position: absolute;
-          right: 6px;
-          bottom: 2px;
-          font-weight: 900;
-          opacity: 0.7;
-          pointer-events: none;
-        }
-
-
-        /* 클릭 유도용 점 (…) */
-        .fc-daygrid-event.fc-memo-event .fc-event-title::after {
-          content: " …";
-          opacity: 0.7;
-          font-weight: 900;
-        }
-
-        /* 모바일은 2줄 */
-        @media (max-width: 768px) {
-          .fc-daygrid-event.fc-memo-event .fc-event-title {
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            font-size: 11px;
+          .fc-daygrid-event.fc-memo-event::after {
+            content: "…";
+            position: absolute;
+            left: 8px;
+            bottom: 2px;                       /* ✅ 두 줄 아래쪽으로 내려감 */
+            font-weight: 900;
+            opacity: 0.85;
+            pointer-events: none;
           }
         }
 
