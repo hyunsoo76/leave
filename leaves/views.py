@@ -80,7 +80,6 @@ def events_api(request):
             memo_qs = memo_qs.filter(memo_date__gte=start_dt.date(), memo_date__lt=end_dt.date())
 
     for m in memo_qs:
-        # allDay 이벤트는 end를 다음날로
         events.append({
             "id": f"memo-{m.id}",
             "title": m.title,  # ✅ 제목만
@@ -88,13 +87,12 @@ def events_api(request):
             "end": (m.memo_date + timedelta(days=1)).isoformat(),
             "allDay": True,
             "classNames": ["fc-memo-event", f"memo-{m.color}"],
-            "editable": False,
             "extendedProps": {
-                "kind": "memo",
-                "content": m.content or "",  # ✅ 내용
-                "color": m.color or "",
-            }
+                "memoContent": m.content,  # ✅ 내용은 따로
+            },
+            "editable": False,
         })
+
 
     ## ===== ✅ 대한민국 공휴일 이벤트 추가 =====
     KR_HOLIDAY_KO = {

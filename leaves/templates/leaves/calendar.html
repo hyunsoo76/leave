@@ -313,33 +313,33 @@
           color: #fff !important;
         }
                 
-              /* ===== 모바일에서 이벤트 3줄 제한 ===== */
-      @media (max-width: 768px) {
-        .fc .fc-daygrid-event .fc-event-title {
+                /* ===== 메모 제목 말줄임 (웹 1줄 / 모바일 2줄) ===== */
+        .fc-daygrid-event.fc-memo-event .fc-event-title {
           display: -webkit-box;
-          display: box;               /* fallback */
           -webkit-box-orient: vertical;
-          box-orient: vertical;
-
-          -webkit-line-clamp: 3;
-          line-clamp: 3;              /* ✅ 표준 속성 */
-
+          -webkit-line-clamp: 1;   /* 웹: 1줄 */
+          line-clamp: 1;
           overflow: hidden;
-          white-space: normal;
           text-overflow: ellipsis;
-
-          line-height: 1.15;
-          font-size: 11px;
+          white-space: normal;
+          position: relative;
         }
 
-        .fc .fc-daygrid-event {
-          padding: 2px 4px;
+        /* 클릭 유도용 점 (…) */
+        .fc-daygrid-event.fc-memo-event .fc-event-title::after {
+          content: " …";
+          opacity: 0.7;
+          font-weight: 900;
         }
 
-        .fc-daygrid-day-frame {
-          min-height: 70px;
+        /* 모바일은 2줄 */
+        @media (max-width: 768px) {
+          .fc-daygrid-event.fc-memo-event .fc-event-title {
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            font-size: 11px;
+          }
         }
-      }
 
 
   </style>
@@ -577,11 +577,25 @@
 
           // 메모 이벤트
           if (String(e.id).startsWith("memo-")) {
-            // title에 이미 "제목:내용" 형태로 넣고 있으니 그대로 쓰거나
-            // content 따로 쓰고 싶으면 extendedProps에 넣어야 함
-            info.el.setAttribute("title", e.title);
-          } else if (p.halfLabel) {
+              const full = p.memoContent ? `${e.title}\n${p.memoContent}` : e.title;
+              info.el.setAttribute("title", full);
+            }else if (p.halfLabel) {
             info.el.setAttribute("title", `${e.title} (${p.halfLabel})`);
+          }
+        },
+
+        eventClick: function(info) {
+          const e = info.event;
+          const p = e.extendedProps || {};
+
+          // 메모만 반응
+          if (String(e.id).startsWith("memo-")) {
+            info.jsEvent.preventDefault();
+
+            const title = e.title || "";
+            const content = p.memoContent || "";
+
+            alert(content ? `${title}\n\n${content}` : title);
           }
         },
 
