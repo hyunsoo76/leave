@@ -314,16 +314,47 @@
         }
                 
                 /* ===== 메모 제목 말줄임 (웹 1줄 / 모바일 2줄) ===== */
-        .fc-daygrid-event.fc-memo-event .fc-event-title {
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 1;   /* 웹: 1줄 */
-          line-clamp: 1;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: normal;
-          position: relative;
+
+        /* 1) 텍스트 줄수 제한 */
+        @media (min-width: 769px) {
+          .fc-daygrid-event.fc-memo-event .fc-event-title {
+            white-space: nowrap !important;   /* 웹: 1줄 */
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            display: block !important;
+          }
         }
+
+        @media (max-width: 768px) {
+          .fc-daygrid-event.fc-memo-event .fc-event-title {
+            display: -webkit-box !important;
+            -webkit-box-orient: vertical !important;
+            -webkit-line-clamp: 2 !important; /* 모바일: 2줄 */
+            line-clamp: 2 !important;         /* 표준 */
+            overflow: hidden !important;
+            white-space: normal !important;
+            text-overflow: ellipsis !important;
+            font-size: 11px;
+          }
+        }
+
+        /* 2) 클릭 유도용 … 은 "제목"이 아니라 "이벤트 전체"에 붙여야 안 잘림 */
+        .fc-daygrid-event.fc-memo-event {
+          position: relative;
+          cursor: pointer !important; /* 메모는 클릭됨 */
+        }
+
+        /* 항상 … 붙이기(간단/확실) */
+        .fc-daygrid-event.fc-memo-event::after {
+          content: " …";
+          position: absolute;
+          right: 6px;
+          bottom: 2px;
+          font-weight: 900;
+          opacity: 0.7;
+          pointer-events: none;
+        }
+
 
         /* 클릭 유도용 점 (…) */
         .fc-daygrid-event.fc-memo-event .fc-event-title::after {
