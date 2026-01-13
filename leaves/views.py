@@ -987,7 +987,6 @@ def calendar_embed(request):
 
 @staff_member_required
 def memo_new(request):
-    # /manage/memo/new/?date=YYYY-MM-DD 로 들어오면 날짜 미리 채움
     date_str = request.GET.get("date")
     initial = {}
     if date_str:
@@ -999,16 +998,21 @@ def memo_new(request):
             memo_date = form.cleaned_data["memo_date"]
             title = (form.cleaned_data.get("title") or "").strip()
             content = (form.cleaned_data.get("content") or "").strip()
+            color = form.cleaned_data.get("color")  # ✅ 추가
 
-            # ✅ 같은 날짜+제목 메모가 이미 있으면 새로 만들지 말고 업데이트
+            # ✅ 같은 날짜+제목 메모가 이미 있으면 업데이트(내용+색상)
             obj, created = CalendarMemo.objects.get_or_create(
                 memo_date=memo_date,
                 title=title,
-                defaults={"content": content},
+                defaults={
+                    "content": content,
+                    "color": color,          # ✅ 추가 (생성 시 반영)
+                },
             )
             if not created:
                 obj.content = content
-                obj.save(update_fields=["content"])
+                obj.color = color          # ✅ 추가 (수정 시 반영)
+                obj.save(update_fields=["content", "color"])  # ✅ 추가
 
             messages.success(request, "메모가 저장되었습니다.")
             return redirect("/leave/manage/summary/")
