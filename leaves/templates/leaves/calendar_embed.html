@@ -9,125 +9,282 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
   <style>
-        /* ===== 공통: 메모 이벤트 기본 ===== */
-    .fc-daygrid-event.fc-memo-event,
-    .fc-daygrid-event.fc-memo-event .fc-event-main,
-    .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
-    .fc-daygrid-event.fc-memo-event .fc-event-title-container {
-      border: 0 !important;
-      box-shadow: none !important;
+    /* iframe 안에서 스크롤바 생기지 않게 */
+    html, body { margin: 100; padding: 0; height: 100%; overflow: hidden; }
+    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial; padding:12px; }
+
+    @media (max-width: 480px) {
+      body { padding: 6px; }   /* ✅ 모바일에서 더 넓게 */
     }
 
-    /* 말풍선/모양 */
-    .fc-daygrid-event.fc-memo-event {
-      border-radius: 8px !important;
-      padding: 2px 6px !important;
+    /* ✅ 핵심: 모바일에서는 max-width 해제해서 꽉 차게 */
+    #calendar{
+      width: 100%;
+      height: 100%;
+      max-width: none;  /* PC에서는 유지 */
+      margin: 0;
+    }
+    @media (max-width: 480px) {
+      #calendar { max-width: none; }  /* ✅ 모바일에서 제한 제거 */
     }
 
-    /* 타이틀 + 클릭유도(… / › / ⓘ 등) */
-    .fc-daygrid-event.fc-memo-event .memo-title {
-      font-weight: 800 !important;
+    .fc { margin: 0; }
+
+    /* 요일 색상 */
+    .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion { color:#d00; font-weight:700; }
+    .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion { color:#06c; font-weight:700; }
+    .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number { color:#d00; font-weight:700; }
+    .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number { color:#06c; font-weight:700; }
+
+    /* 내부 스크롤(파란 스크롤바) 방지 */
+    .fc .fc-scroller { overflow: hidden !important; }
+
+    /* ===== 이벤트(칩) 스타일: 연차/반차 구분 ===== */
+    .fc .fc-daygrid-event { white-space: normal; border: 0; }
+    .fc .fc-daygrid-event .fc-event-main { padding: 0; }
+
+    /* 연차(기본) = 파란 칩 */
+    .fc .fc-daygrid-event.ev-annual {
+      background: rgba(37, 99, 235, 0.95);
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+    /* 반차 = 연한 하늘색 칩 */
+    .fc .fc-daygrid-event.ev-half {
+      background: rgba(96, 165, 250, 0.95);
+      border-radius: 8px;
+      padding: 2px 6px;
     }
 
-    .fc-daygrid-event.fc-memo-event .memo-hint {
-      opacity: .85;
-      font-weight: 900;
-      margin-left: 2px;
+    /* 이름/라벨 글씨 */
+    .fc-emp-name{
+      color:#fff;
+      font-size:12px;
+      font-weight:500;
+      letter-spacing:-0.005em;
+      line-height:1.15;
+      padding-left: 5px;
     }
-
-    /* PC: 한 줄만 */
-    .memo-one-line .memo-title{
+    .fc-half-label{
       display:block;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      margin-top:2px;
+      font-size:11px;
+      font-weight:500;
+      color:#fff;
+      line-height:1.1;
+      letter-spacing:-0.01em;
+      opacity:0.95;
+      padding-left: 5px;
     }
 
-    /* 모바일: 2줄만 (호환성 경고 해결 포함) */
-    .memo-clamp-2 .memo-title{
-      display:-webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;     /* ✅ 표준 속성 */
-      overflow:hidden;
+    /* ✅ 과거 날짜: 칸 배경만 아주 살짝 회색 */
+    .fc .fc-daygrid-day.fc-past-soft { background: rgba(0,0,0,0.03); }
+
+    /* ✅ +N(더보기) */
+    .fc .fc-daygrid-more-link{
+      color:#111;
+      font-weight:600;
     }
 
-    /* ===== 색상 클래스별 배경/글자색 ===== */
-    .fc-daygrid-event.fc-memo-event.memo-yellow,
-    .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main {
-      background:#FFD54A !important;
-      border-color:#FFD54A !important;
+    /* ✅ 팝오버(더보기 창) : 검은 배경 + 흰 글씨 */
+    .fc .fc-popover{
+      background: rgba(0,0,0,0.92);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      color:#fff;
     }
-    .fc-daygrid-event.fc-memo-event.memo-yellow .memo-title,
-    .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title,
-    .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-time {
-      color:#2b2400 !important;
+    .fc .fc-popover-header{
+      background: transparent;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      color:#fff;
+    }
+    .fc .fc-popover-title{ color:#fff; font-weight:700; }
+    .fc .fc-popover-close{
+      color:#fff;
+      opacity:0.9;
+    }
+    .fc .fc-popover-body{ color:#fff; }
+
+    /* ✅ 팝오버 안의 이벤트도 "칩 색상"이 그대로 보이게 */
+    .fc .fc-popover .fc-daygrid-event { margin: 4px 0; }
+
+    /* 모바일 헤더 */
+    @media (max-width: 480px) {
+      .fc .fc-header-toolbar { flex-wrap: wrap; gap: 6px; }
+      .fc .fc-toolbar-title { font-size: 20px; }
+      .fc .fc-button { padding: 6px 10px; font-size: 13px; }
     }
 
-    .fc-daygrid-event.fc-memo-event.memo-blue,
-    .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main {
-      background:#3B82F6 !important;
-      border-color:#3B82F6 !important;
+    /* 메모 이벤트(회색 계열)
+    .fc .fc-memo-event,
+    .fc .fc-memo-event .fc-event-main {
+      background: rgba(0,0,0,0.65) !important;
+      border-color: rgba(0,0,0,0.65) !important;
+      border-radius: 8px;
+      padding: 2px 6px;
     }
-    .fc-daygrid-event.fc-memo-event.memo-blue .memo-title,
-    .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title,
-    .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-time {
-      color:#ffffff !important;
+    .fc .fc-memo-event .fc-event-title,
+    .fc .fc-memo-event .fc-event-main-frame {
+      color: #fff !important;
+      font-weight: 600;
+    } */
+
+    /* ✅ 공휴일 이벤트: 글자만 심플하게 + 빨간색 */
+    .fc-holiday-text{
+      color:#d00;
+      font-weight:600;
+      font-size:12px;
+      line-height:1.1;
+      letter-spacing:-0.01em;
+      padding-left: 2px;
     }
 
-    .fc-daygrid-event.fc-memo-event.memo-green,
-    .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main {
-      background:#16A34A !important;
-      border-color:#16A34A !important;
-    }
-    .fc-daygrid-event.fc-memo-event.memo-green .memo-title,
-    .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title,
-    .fc-daygrid-event.fc-memo-event.memo-green .fc-event-time {
-      color:#eaffea !important;
+    /* ✅ 공휴일 날짜 숫자만 빨간색 (지원 브라우저에서만) */
+    .fc-daygrid-day:has(.fc-holiday-event) .fc-daygrid-day-number {
+      color:#d00 !important;
+      font-weight:500;
     }
 
-    .fc-daygrid-event.fc-memo-event.memo-red,
-    .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main {
-      background:#EF4444 !important;
-      border-color:#EF4444 !important;
+    /* ✅ 타이틀: 월 크게 + 년 작게 */
+    .fc .fc-toolbar-title{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
     }
-    .fc-daygrid-event.fc-memo-event.memo-red .memo-title,
-    .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title,
-    .fc-daygrid-event.fc-memo-event.memo-red .fc-event-time {
-      color:#ffffff !important;
+    .fc-title-month{
+      font-size:40px;
+      font-weight:800;
+      line-height:1;
     }
-
-    /* ===== 모달 스타일 ===== */
-    .memo-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.45);
-      display:flex; align-items:center; justify-content:center;
-      z-index:9999;
-      padding:16px;
-    }
-    .memo-modal{
-      width:min(560px, 100%);
-      background:#fff;
-      border-radius:14px;
-      overflow:hidden;
-      box-shadow:0 10px 30px rgba(0,0,0,.25);
-    }
-    .memo-modal-header{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:12px 14px;
-      border-bottom:1px solid rgba(0,0,0,.08);
-    }
-    .memo-modal-title{ font-weight:900; font-size:16px; }
-    .memo-modal-close{
-      border:0; background:transparent; font-size:18px; cursor:pointer;
-    }
-    .memo-modal-body{
-      padding:14px;
-      white-space:pre-wrap;
-      line-height:1.45;
-      font-size:14px;
+    .fc-title-year{
+      font-size:16px;
+      font-weight:600;
+      opacity:.75;
+      line-height:1;
     }
 
+    /* ✅ 공휴일 이벤트: 글자만 빨간색, 배경 완전 제거 */
+      .fc-daygrid-event.fc-holiday-event,
+      .fc-daygrid-event.fc-holiday-event .fc-event-main,
+      .fc-daygrid-event.fc-holiday-event .fc-event-title {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        color: #d00 !important;
+        font-weight: 500 !important;
+        padding: 0 !important;
+      }
+
+      /* 혹시 라운드/칩이 남아있으면 제거 */
+      .fc-daygrid-event.fc-holiday-event {
+        border-radius: 0 !important;
+      }
+
+            /* ===== 1) 메모 공통 모양 (색상은 아래 memo-*가 담당) ===== */
+      .fc-daygrid-event.fc-memo-event {
+        border-radius: 8px !important;
+        padding: 2px 6px !important;
+        box-shadow: none !important;
+        cursor: default !important;
+      }
+
+      /* FullCalendar가 기본으로 넣는 검정/회색 배경이 끼어들면 제거 */
+      .fc-daygrid-event.fc-memo-event,
+      .fc-daygrid-event.fc-memo-event .fc-event-main,
+      .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event .fc-event-title-container {
+        background: transparent !important;
+        border-color: transparent !important;
+      }
+
+      /* 제목/시간 공통(기본값) - 색상별에서 덮어씀 */
+      .fc-daygrid-event.fc-memo-event .fc-event-title,
+      .fc-daygrid-event.fc-memo-event .fc-event-time {
+        font-weight: 700 !important;
+      }
+
+      /* ===== 2) 메모 색상별 ===== */
+
+      /* GREEN */
+      .fc-daygrid-event.fc-memo-event.memo-green,
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title-container {
+        background-color: #1b7f3a !important;
+        border-color: #1b7f3a !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-time {
+        color: #b9ffb9 !important;
+      }
+
+      /* BLUE */
+      .fc-daygrid-event.fc-memo-event.memo-blue,
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title-container {
+        background-color: #1e5bb8 !important;
+        border-color: #1e5bb8 !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-time {
+        color: #e9f1ff !important;
+      }
+
+      /* YELLOW */
+      .fc-daygrid-event.fc-memo-event.memo-yellow,
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title-container {
+        background-color: #b58a00 !important;
+        border-color: #b58a00 !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-time {
+        color: #111 !important;
+      }
+
+      /* RED */
+      .fc-daygrid-event.fc-memo-event.memo-red,
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title-container {
+        background-color: #b11f2a !important;
+        border-color: #b11f2a !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-time {
+        color: #fff !important;
+      }
+
+      /* GRAY */
+      .fc-daygrid-event.fc-memo-event.memo-gray,
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-title-container {
+        background-color: #555 !important;
+        border-color: #555 !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-time {
+        color: #fff !important;
+      }
+
+            /* 기본(혹시 color 없을 때) */
+      .fc .fc-memo-event { border-radius: 8px !important; padding: 2px 6px !important; }
+
+      /* 색상별 */
+      .fc .memo-green { background:#1b7f3a !important; border-color:#1b7f3a !important; color:#b9ffb9 !important; }
+      .fc .memo-blue  { background:#1455c0 !important; border-color:#1455c0 !important; color:#d6e6ff !important; }
+      .fc .memo-yellow{ background:#caa300 !important; border-color:#caa300 !important; color:#fff7c2 !important; }
+      .fc .memo-red   { background:#b82121 !important; border-color:#b82121 !important; color:#ffd2d2 !important; }
+      .fc .memo-gray  { background:#333 !important;    border-color:#333 !important;    color:#eaeaea !important; }
+
+      /* 내부 글자도 따라가게 */
+      .fc .fc-memo-event .fc-event-title,
+      .fc .fc-memo-event .fc-event-time,
+      .fc .fc-memo-event a { color: inherit !important; }
 
 
   </style>
@@ -138,248 +295,112 @@
   <div id="calendar"></div>
 
   <script>
-  const EVENTS_URL = "{% url 'leaves:events_api' %}";
-  const REQUEST_NEW_URL = "{% url 'leaves:request_new' %}";
+    const EVENTS_URL = "{% url 'leaves:events_api' %}";
 
-  // ===== Modal helpers (기존 인증 모달) =====
-  const backdrop = document.getElementById('authModalBackdrop');
-  const selectedDateText = document.getElementById('selectedDateText');
-  const birthInput = document.getElementById('birthInput');
-  const authError = document.getElementById('authError');
-  const btnCancel = document.getElementById('btnCancel');
-  const btnOk = document.getElementById('btnOk');
-
-  let selectedDateStr = null;
-
-  function openAuthModal(dateStr) {
-    selectedDateStr = dateStr;
-    selectedDateText.textContent = dateStr;
-    authError.textContent = '';
-    birthInput.value = '';
-    backdrop.style.display = 'flex';
-    backdrop.setAttribute('aria-hidden', 'false');
-    setTimeout(() => birthInput.focus(), 50);
-  }
-
-  function closeAuthModal() {
-    backdrop.style.display = 'none';
-    backdrop.setAttribute('aria-hidden', 'true');
-    selectedDateStr = null;
-  }
-
-  function goRequestNew() {
-    const birth = birthInput.value.trim();
-    if (!selectedDateStr) return;
-
-    if (!/^\d{6}$/.test(birth)) {
-      authError.textContent = '생년월일 6자리 숫자로 입력해주세요. (예: 760910)';
-      birthInput.focus();
-      return;
+    function startOfToday() {
+      const d = new Date();
+      d.setHours(0,0,0,0);
+      return d;
     }
 
-    window.location.href =
-      `${REQUEST_NEW_URL}?date=${encodeURIComponent(selectedDateStr)}&birth=${encodeURIComponent(birth)}`;
-  }
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
 
-  btnCancel.addEventListener('click', closeAuthModal);
-  btnOk.addEventListener('click', goRequestNew);
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: '100%',
+        contentHeight: 'auto',
 
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) closeAuthModal();
-  });
+        events: EVENTS_URL,
 
-  birthInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') goRequestNew();
-    if (e.key === 'Escape') closeAuthModal();
-  });
+        headerToolbar: {
+          left: 'title',
+          center: '',
+          right: 'today prev,next'
+        },
 
-  // ===== ✅ Memo Modal (새로 추가) =====
-  const memoBackdrop = document.getElementById("memoModalBackdrop");
-  const memoTitleEl = document.getElementById("memoModalTitle");
-  const memoBodyEl = document.getElementById("memoModalBody");
-  const memoCloseBtn = document.getElementById("memoModalClose");
+        datesSet: function(info) {
+          const d = new Date(info.view.currentStart);
+          const month = d.getMonth() + 1;
+          const year = d.getFullYear();
 
-  function openMemoModal(title, content) {
-    memoTitleEl.textContent = title || "(제목 없음)";
-    memoBodyEl.textContent = content || "";
-    memoBackdrop.style.display = "flex";
-    memoBackdrop.setAttribute("aria-hidden", "false");
-  }
-
-  function closeMemoModal() {
-    memoBackdrop.style.display = "none";
-    memoBackdrop.setAttribute("aria-hidden", "true");
-  }
-
-  memoCloseBtn && memoCloseBtn.addEventListener("click", closeMemoModal);
-  memoBackdrop && memoBackdrop.addEventListener("click", (e) => {
-    if (e.target === memoBackdrop) closeMemoModal();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMemoModal();
-  });
-
-  // ===== FullCalendar =====
-  document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      dayMaxEventRows: 4,
-      moreLinkClick: 'popover',
-      aspectRatio: 2.05,
-      height: 'auto',
-      events: EVENTS_URL,
-
-      headerToolbar: {
-        left: 'title',
-        center: '',
-        right: 'myLeave today prev,next'
-      },
-
-      customButtons: {
-        customTitle: { text: '' },
-        myLeave: {
-          text: '내 연차 보기',
-          click: function () {
-            window.location.href = "{% url 'leaves:me_lookup' %}";
+          const titleEl = document.querySelector('.fc .fc-toolbar-title');
+          if (titleEl) {
+            titleEl.innerHTML = `
+              <span class="fc-title-month">${month}</span>
+              <span class="fc-title-year">${year}</span>
+            `;
           }
-        }
-      },
+        },
 
-      buttonText: { today: 'today' },
+        dayMaxEventRows: 3,
+        moreLinkClick: 'popover',
 
-      datesSet: function(info) {
-        const d = new Date(info.view.currentStart);
-        const month = d.getMonth() + 1;
-        const year = d.getFullYear();
+        dateClick: function(info) {
+          const today0 = startOfToday();
+          const clicked = new Date(info.date);
+          clicked.setHours(0,0,0,0);
+          if (clicked < today0) return;
+        },
 
-        const titleEl = document.querySelector('.fc .fc-toolbar-title');
-        if (titleEl) {
-          titleEl.innerHTML = `
-            <span class="fc-title-month">${month}</span>
-            <span class="fc-title-year">${year}</span>
-          `;
-        }
-      },
+        dayCellClassNames: function(arg) {
+          const today0 = startOfToday();
+          const cell = new Date(arg.date);
+          cell.setHours(0,0,0,0);
+          if (cell < today0) return ['fc-past-soft'];
+          return [];
+        },
 
-      dateClick: function(info) {
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const clicked = new Date(info.dateStr);
+        /* ✅ 핵심: 공휴일/메모는 따로 렌더링하고, 직원 이벤트만 기존 유지 */
+        eventContent: function(arg) {
+          const classes = arg.event.classNames || [];
 
-        if (clicked < today) {
-          alert('과거 날짜에는 연차를 신청할 수 없습니다.');
-          return;
-        }
-        openAuthModal(info.dateStr);
-      },
+          // 1) 공휴일: 빨간 글자만 (칩 X)
+          if (classes.includes('fc-holiday-event')) {
+            return {
+              html: `<div class="fc-holiday-text">${arg.event.title}</div>`
+            };
+          }
 
-      dayCellDidMount: function(arg) {
-        const today = new Date();
-        today.setHours(0,0,0,0);
+          // 2) 메모: 제목/내용 그대로(흰색) - 기존 class로 배경 적용됨
+          if (classes.includes('fc-memo-event')) {
+            // 메모는 title 자체가 "📝 ..." 형태라 그대로 출력
+            return {
+              html: `<div class="fc-emp-name" style="font-weight:600;">${arg.event.title}</div>`
+            };
+          }
 
-        const cellDate = new Date(arg.date);
-        cellDate.setHours(0,0,0,0);
+          // 3) 직원(연차/반차)
+          const isMobile = window.matchMedia('(max-width: 480px)').matches;
+          const wrap = document.createElement('div');
+          const half = arg.event.extendedProps.halfLabel;
 
-        if (cellDate < today) {
-          arg.el.style.backgroundColor = 'rgba(0,0,0,0.03)';
-        }
-      },
+          if (!isMobile && half) {
+            const oneLine = document.createElement('div');
+            oneLine.className = 'fc-emp-name';
+            oneLine.textContent = `${arg.event.title}-${half}`;
+            wrap.appendChild(oneLine);
+            return { domNodes: [wrap] };
+          }
 
-      // ✅ 메모: 타이틀만 + 클릭유도(…) / 모바일 2줄
-      eventContent: function(arg) {
-        const isMobile = window.matchMedia('(max-width: 480px)').matches;
-        const wrap = document.createElement('div');
+          const nameEl = document.createElement('div');
+          nameEl.className = 'fc-emp-name';
+          nameEl.textContent = arg.event.title;
+          wrap.appendChild(nameEl);
 
-        const isMemo = String(arg.event.id).startsWith("memo-");
-        const half = arg.event.extendedProps.halfLabel;
+          if (half) {
+            const halfEl = document.createElement('div');
+            halfEl.textContent = half;
+            halfEl.className = 'fc-half-label';
+            wrap.appendChild(halfEl);
+          }
 
-        if (isMemo) {
-          wrap.className = "fc-event-wrap " + (isMobile ? "memo-clamp-2" : "memo-one-line");
-
-          const title = document.createElement("div");
-          title.className = "memo-title";
-          title.textContent = arg.event.title;
-
-          const hint = document.createElement("span");
-          hint.className = "memo-hint";
-          hint.textContent = " …"; // ✅ 클릭 유도 표시
-          title.appendChild(hint);
-
-          wrap.appendChild(title);
           return { domNodes: [wrap] };
-        }
+        },
+      });
 
-        // 연차(기존)
-        wrap.style.lineHeight = '1.15';
-
-        if (!isMobile && half) {
-          const oneLine = document.createElement('div');
-          oneLine.textContent = `${arg.event.title}-${half}`;
-          wrap.appendChild(oneLine);
-          return { domNodes: [wrap] };
-        }
-
-        const name = document.createElement('div');
-        name.textContent = arg.event.title;
-        wrap.appendChild(name);
-
-        if (half) {
-          const sub = document.createElement('div');
-          sub.textContent = half;
-          sub.className = 'fc-half-label';
-          wrap.appendChild(sub);
-        }
-        return { domNodes: [wrap] };
-      },
-
-      // ✅ 클릭하면 메모 모달 열기
-      eventClick: function(info) {
-        const e = info.event;
-        const isMemo = String(e.id).startsWith("memo-");
-        if (!isMemo) return;
-
-        const title = e.title || "";
-        const content = (e.extendedProps && e.extendedProps.content) ? e.extendedProps.content : "";
-        openMemoModal(title, content);
-      },
-
-      // ✅ 툴팁(title 속성)도 유지
-      eventDidMount: function(info) {
-        const e = info.event;
-        const p = e.extendedProps || {};
-
-        if (String(e.id).startsWith("memo-")) {
-          info.el.setAttribute("title", e.title);
-        } else if (p.halfLabel) {
-          info.el.setAttribute("title", `${e.title} (${p.halfLabel})`);
-        }
-      },
+      calendar.render();
     });
-
-    calendar.render();
-    setTimeout(() => calendar.updateSize(), 0);
-    window.addEventListener('resize', () => calendar.updateSize());
-  });
-
-  // ===== 아래 복사/공유 함수들은 네 코드 그대로 둬도 됨 =====
-  function copyToClipboard() { /* ... 네 기존 코드 ... */ }
-  function copyText() { /* ... 네 기존 코드 ... */ }
-  function showStatus(msg) { /* ... 네 기존 코드 ... */ }
-  function autoHide() { /* ... 네 기존 코드 ... */ }
-  async function shareText() { /* ... 네 기존 코드 ... */ }
-</script>
-
-      <!-- ✅ Memo Modal -->
-    <div id="memoModalBackdrop" class="memo-backdrop" aria-hidden="true" style="display:none;">
-      <div class="memo-modal" role="dialog" aria-modal="true" aria-labelledby="memoModalTitle">
-        <div class="memo-modal-header">
-          <div id="memoModalTitle" class="memo-modal-title"></div>
-          <button type="button" id="memoModalClose" class="memo-modal-close" aria-label="닫기">✕</button>
-        </div>
-        <div id="memoModalBody" class="memo-modal-body"></div>
-      </div>
-    </div>
+  </script>
 </body>
 </html>
