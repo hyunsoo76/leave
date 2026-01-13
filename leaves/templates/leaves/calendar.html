@@ -610,6 +610,7 @@
           if (String(e.id).startsWith("memo-")) {
               const full = p.memoContent ? `${e.title}\n${p.memoContent}` : e.title;
               info.el.setAttribute("title", full);
+              info.el.style.pointerEvents = "auto"; // ✅ 추가
             }else if (p.halfLabel) {
             info.el.setAttribute("title", `${e.title} (${p.halfLabel})`);
           }
