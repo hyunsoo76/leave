@@ -107,7 +107,7 @@ class CompGrantBulkForm(forms.Form):
 class CalendarMemoForm(forms.ModelForm):
     class Meta:
         model = CalendarMemo
-        fields = ["memo_date", "title", "content"]
+        fields = ["memo_date", "title", "content", "color"]
         widgets = {
             "memo_date": forms.DateInput(attrs={"type": "date"}),
             "title": forms.TextInput(attrs={"placeholder": "예: 공휴일 근무 / 회식 / 점검"}),

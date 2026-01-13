@@ -21,10 +21,10 @@
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}
-      <div style="margin:10px 0;">
+      <!-- <div style="margin:10px 0;">
         <label style="display:block; font-weight:700; margin-bottom:6px;">색상</label>
         {{ form.color }}
-      </div>
+      </div> -->
       <button type="submit">저장</button>
     </form>
   </div>
