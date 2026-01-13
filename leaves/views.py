@@ -64,6 +64,7 @@ def events_api(request):
             "start": start.isoformat(),
             "end": end_exclusive.isoformat(),
             "allDay": True,
+            "classNames": ["fc-leave-event"], 
             "extendedProps": {
                 "halfLabel": half_label,   # ✅ 반차 정보는 여기
             }
