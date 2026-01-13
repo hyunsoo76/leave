@@ -83,16 +83,17 @@ def events_api(request):
         # allDay 이벤트는 end를 다음날로
         events.append({
             "id": f"memo-{m.id}",
-            "title": f"{m.title}",
+            "title": m.title,  # ✅ 제목만
             "start": m.memo_date.isoformat(),
             "end": (m.memo_date + timedelta(days=1)).isoformat(),
             "allDay": True,
             "classNames": ["fc-memo-event", f"memo-{m.color}"],
             "editable": False,
             "extendedProps": {
-            "content": m.content,   # ✅ 팝업에서 볼 내용
-            "color": m.color,
-            "type": "memo", },
+                "kind": "memo",
+                "content": m.content or "",  # ✅ 내용
+                "color": m.color or "",
+            }
         })
 
     ## ===== ✅ 대한민국 공휴일 이벤트 추가 =====
