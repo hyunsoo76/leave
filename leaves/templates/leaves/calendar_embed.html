@@ -342,6 +342,26 @@
         display: block !important;
         line-height: 1.15 !important;
       }
+            /* 메모는 줄바꿈/여러줄 표시 강제 */
+      .fc .memo-wrap{
+        white-space: normal !important;
+        overflow: visible !important;
+      }
+
+      .fc .memo-title,
+      .fc .memo-content{
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        word-break: break-all !important;     /* 한글/긴 문자열 강제 줄바꿈 */
+        overflow-wrap: anywhere !important;
+        line-height: 1.15 !important;
+      }
+
+      .fc .memo-content{
+        margin-top: 2px;
+        opacity: 0.95;
+      }
 
 
 
@@ -423,11 +443,20 @@
 
           // 2) 메모: 제목/내용 그대로(흰색) - 기존 class로 배경 적용됨
           if (classes.includes('fc-memo-event')) {
-            // 메모는 title 자체가 "📝 ..." 형태라 그대로 출력
-            return {
-              html: `<div class="fc-emp-name" style="font-weight:600;">${arg.event.title}</div>`
-            };
-          }
+              const content = (arg.event.extendedProps && arg.event.extendedProps.memoContent) ? arg.event.extendedProps.memoContent : "";
+              const safeTitle = (arg.event.title || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+              const safeContent = (content || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+              return {
+                html: `
+                  <div class="memo-wrap">
+                    <div class="memo-title">${safeTitle}</div>
+                    ${safeContent ? `<div class="memo-content">${safeContent}</div>` : ``}
+                  </div>
+                `
+              };
+            }
+
 
           // 3) 직원(연차/반차)
           const isMobile = window.matchMedia('(max-width: 480px)').matches;
