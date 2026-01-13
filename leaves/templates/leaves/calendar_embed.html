@@ -308,6 +308,42 @@
         word-break: break-word !important;
       }
 
+            /* ===== 임베디드: 메모는 여러 줄로 '무조건' 보이게 ===== */
+
+      /* 1) 메모 이벤트(앵커) 자체에 줄바꿈 허용 + 높이 제한 해제 */
+      .fc .fc-daygrid-event.fc-memo-event{
+        white-space: normal !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+
+      /* 2) FC 내부 래퍼들도 줄바꿈/overflow가 막지 못하게 */
+      .fc .fc-daygrid-event.fc-memo-event .fc-event-main,
+      .fc .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
+      .fc .fc-daygrid-event.fc-memo-event .fc-event-title-container{
+        white-space: normal !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        display: block !important;   /* ✅ flex 때문에 한 줄로 고정되는 경우 방지 */
+      }
+
+      /* 3) 네가 메모를 출력하는 div(.fc-emp-name)에 “한글도 강제로 줄바꿈” */
+      .fc .fc-daygrid-event.fc-memo-event .fc-emp-name{
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+
+        /* ✅ 한글/긴 문자열도 줄바꿈 강제 */
+        word-break: break-all !important;
+        overflow-wrap: anywhere !important;
+
+        display: block !important;
+        line-height: 1.15 !important;
+      }
+
+
 
 
   </style>
