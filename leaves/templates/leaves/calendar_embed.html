@@ -10,7 +10,7 @@
 
   <style>
     /* iframe 안에서 스크롤바 생기지 않게 */
-    html, body { margin: 100; padding: 0; height: 100%; overflow: hidden; }
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
     body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial; padding:12px; }
 
     @media (max-width: 480px) {
@@ -373,6 +373,15 @@
         background-color: #003366 !important;
         border-color: #003366 !important;
       }
+
+              /* ✅ 임베드: 날짜칸 높이를 메인처럼 */
+        .fc .fc-daygrid-day-frame{ min-height: 90px; }
+        @media (min-width: 1400px){ .fc .fc-daygrid-day-frame{ min-height: 100px; } }
+        @media (max-width: 480px){ .fc .fc-daygrid-day-frame{ min-height: 78px; } }
+
+        /* ✅ 임베드: 이벤트 영역 잘림 방지 */
+        .fc .fc-daygrid-day-events{ max-height: none !important; }
+
 
   </style>
 </head>
