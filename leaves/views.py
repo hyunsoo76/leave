@@ -775,11 +775,11 @@ def admin_summary(request):
             "remain_total": remain_total,
         })
 
-        return render(
-            request,
-            "leaves/admin_summary.html",
-            {"rows": rows, "year": year, "today_visitor_count": today_count, "total_visitor_count": total_count},
-        )
+    return render(
+        request,
+        "leaves/admin_summary.html",
+        {"rows": rows, "year": year, "today_visitor_count": today_count, "total_visitor_count": total_count},
+    )
 
 @require_http_methods(["GET", "POST"])
 def me_lookup(request):
