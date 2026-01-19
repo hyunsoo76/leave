@@ -30,6 +30,7 @@ from datetime import date
 
 from .utils.telegram import send_telegram
 from django.conf import settings
+from .models import VisitorStat
 
 def calendar_view(request):
     copy_msg = request.session.pop("copy_msg", None)  # ✅ 한번만 보여주기
@@ -725,6 +726,11 @@ def _available_annual(leave_year: LeaveYear) -> float:
 def admin_summary(request):
     year = int(request.GET.get("year") or timezone.now().year)
 
+     # ===== 방문자 카운트(금일/총) =====
+    today = timezone.localdate()
+    today_count = VisitorStat.objects.filter(date=today).values_list("count", flat=True).first() or 0
+    total_count = VisitorStat.objects.aggregate(total=Sum("count"))["total"] or 0
+
     employees = Employee.objects.filter(is_active=True).order_by("name")
 
     rows = []
@@ -769,7 +775,11 @@ def admin_summary(request):
             "remain_total": remain_total,
         })
 
-    return render(request, "leaves/admin_summary.html", {"rows": rows, "year": year})
+        return render(
+            request,
+            "leaves/admin_summary.html",
+            {"rows": rows, "year": year, "today_visitor_count": today_count, "total_visitor_count": total_count},
+        )
 
 @require_http_methods(["GET", "POST"])
 def me_lookup(request):
