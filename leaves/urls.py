@@ -25,7 +25,7 @@ urlpatterns = [
     path("manage/summary/<int:year>/", views.admin_summary, name="admin_summary_year"),
 
     path("manage/employees/", views.admin_employee_list, name="admin_employee_list"),
-    path("manage/employee/<int:employee_id>/<int:year>/", views.employee_detail, name="admin_employee_detail"),
+    path("manage/employee/<int:employee_id>/<int:year>/", views.admin_employee_detail, name="admin_employee_detail"),
 
     path("manage/comp/new/<int:employee_id>/<int:year>/", views.comp_grant_new, name="comp_grant_new"),
     path("manage/comp/bulk/<int:year>/", views.comp_grant_bulk, name="comp_grant_bulk"),

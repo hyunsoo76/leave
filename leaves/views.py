@@ -343,7 +343,7 @@ def request_new(request):
     )
 
 @staff_member_required
-def admin_summary(request, year: int):
+def admin_summary_year_legacy(request, year: int):
     # 직원 목록(활성)
     employees = Employee.objects.filter(is_active=True).order_by("name")
 
@@ -396,7 +396,7 @@ def admin_summary(request, year: int):
 
 
 @staff_member_required
-def employee_detail(request, employee_id: int, year: int):
+def admin_employee_detail(request, employee_id: int, year: int):
     emp = get_object_or_404(Employee, id=employee_id)
     ly, _ = LeaveYear.objects.get_or_create(
         employee=emp,
