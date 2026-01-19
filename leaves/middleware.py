@@ -8,6 +8,9 @@ EXCLUDE_PATH_PREFIXES = (
     "/admin/",
     "/favicon.ico",
     "/leave/manage/",   # ✅ 관리자 화면 제외
+    "/leave/embed/",   # iframe 달력
+    "/leave/api/", 
+    "/leave/static/",
 )
 
 class VisitorCountMiddleware:
