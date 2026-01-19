@@ -3,81 +3,114 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    {% load static %}
+  {% load static %}
   <link rel="icon" href="{% static 'favicon_blue.ico' %}">
   <title>연차 전체 리스트</title>
+
   <style>
-    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR"; padding: 12px; }
+    body {
+      font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR";
+      padding: 12px;
+    }
+
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     th, td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
     th { background: #fafafa; text-align: left; }
     .small { font-size: 12px; color:#666; margin-top:4px; }
     .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#f2f2f2; margin:2px 4px 0 0; }
+
+    /* ===== 공통 버튼 스타일 ===== */
+    .btn {
+      display:inline-block;
+      padding:8px 14px;
+      background:#111;
+      color:#fff;
+      border-radius:8px;
+      text-decoration:none;
+      font-size:14px;
+    }
+    .btn-link {
+      font-size:12px;
+      color:#111;
+      text-decoration:underline;
+    }
+
+    /* ===== 달력 임베드 영역 ===== */
+    .calendar-card {
+      margin: 12px 0;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 12px;
+    }
+    .calendar-card__header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .calendar-embed-wrap {
+      /* ✅ 가로폭 줄이고 가운데 정렬 */
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .calendar-embed {
+      width: 100%;
+      /* ✅ 세로는 조금 늘리고, 화면에 따라 자동 조절 */
+      height: calc(100vh - 180px);
+      min-height: 720px;   /* 기존 650 -> 더 넉넉하게 */
+      max-height: 900px;   /* 너무 과도하게 커지는 것 방지 */
+      border: 0;
+      border-radius: 12px;
+    }
+
+    /* ===== 방문자 카드 ===== */
+    .visitor-card {
+      margin:10px 0;
+      padding:10px;
+      background:#f7f7f7;
+      border-radius:8px;
+    }
   </style>
 </head>
+
 <body>
-  
-<h2>대진산업 연차관리 ({{ year }})</h2>
-  <!-- ✅ 달력 영역 -->
-<div style="margin:12px 0; padding:12px; background:#fff; border:1px solid #eee; border-radius:12px;">
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
-    <b>달력</b>
-    <a href="{% url 'leaves:calendar' %}" target="_blank"
-       style="font-size:12px; color:#111; text-decoration:underline;">
-      새 탭으로 달력 열기
-    </a>
+
+  <h2>대진산업 연차관리 ({{ year }})</h2> <div class="visitor-card">
+    <b>금일 방문자</b>: {{ today_visitor_count }}명
+    &nbsp; | &nbsp;
+    <b>총 방문자</b>: {{ total_visitor_count }}명
   </div>
 
-  <!-- ✅ iframe 가로폭 줄이고 가운데 정렬 -->
-  <div style="max-width:1100px; margin:0 auto;">
-    <iframe
-      src="{% url 'leaves:calendar_embed' %}"
-      style="width:100%; height:calc(100vh - 200px); min-height:650px; border:0; border-radius:12px;"
-      loading="lazy"
-      referrerpolicy="no-referrer"
-    ></iframe>
+
+  <!-- ✅ 달력 영역 -->
+  <div class="calendar-card">
+    <div class="calendar-card__header">
+      <b>달력</b>
+      <a class="btn-link" href="{% url 'leaves:calendar' %}" target="_blank">
+        새 탭으로 달력 열기
+      </a>
+    </div>
+
+    <div class="calendar-embed-wrap">
+      <iframe
+        src="{% url 'leaves:calendar_embed' %}"
+        class="calendar-embed"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+      ></iframe>
+    </div>
   </div>
-</div>
 
   <h2>전체 리스트 ({{ year }})</h2>
 
   <p>
-    <a href="{% url 'leaves:calendar' %}"
-      style="
-       display:inline-block;
-       padding:8px 14px;
-       background:#111;
-       color:#fff;
-       border-radius:8px;
-       text-decoration:none;
-       font-size:14px;
-     ">달력</a> |
-    <!-- <br style="margin:8px 0;"> -->
-  <a href="{% url 'leaves:comp_grant_bulk' year=year %}"
-     style="
-       display:inline-block;
-       padding:8px 14px;
-       background:#111;
-       color:#fff;
-       border-radius:8px;
-       text-decoration:none;
-       font-size:14px;
-     ">
-    ➕ 대체휴무발생 일괄등록
-  </a> |
-  <a href="{% url 'leaves:memo_new' %}"
-     style="
-       display:inline-block;
-       padding:8px 14px;
-       background:#111;
-       color:#fff;
-       border-radius:8px;
-       text-decoration:none;
-       font-size:14px;
-     ">
-    ➕ 관리자 메모입력
-    </a>
-</br>
+    <a class="btn" href="{% url 'leaves:calendar' %}">달력</a>
+    |
+    <a class="btn" href="{% url 'leaves:comp_grant_bulk' year=year %}">➕ 대체휴무발생 일괄등록</a>
+    |
+    <a class="btn" href="{% url 'leaves:memo_new' %}">➕ 관리자 메모입력</a>
   </p>
 
   <table>
@@ -94,18 +127,21 @@
         <th>총잔여</th>
       </tr>
     </thead>
+
     <tbody>
       {% for r in rows %}
       <tr>
         <td>
           <a href="{% url 'leaves:me_detail' r.emp.id %}?year={{ year }}">{{ r.emp.name }}</a>
-          <!-- {% if r.comp_grants %}
+          <!--
+          {% if r.comp_grants %}
             <div class="small">
               {% for g in r.comp_grants %}
                 <span class="pill">{{ g.worked_date|date:"m/d" }} {{ g.holiday_name }} (+{{ g.amount }})</span>
               {% endfor %}
             </div>
-          {% endif %} --> <!-- 전체리스트에서 직원성명아래 대체휴무발생 비고표시 안나오게 -->
+          {% endif %}
+          -->
         </td>
         <td>{{ r.base_days }}</td>
         <td>{{ r.carry_over }}</td>
@@ -119,11 +155,12 @@
       {% endfor %}
     </tbody>
   </table>
-  <div style="margin:10px 0; padding:10px; background:#f7f7f7; border-radius:8px;">
-  <b>금일 방문자</b>: {{ today_visitor_count }}명
-  &nbsp; | &nbsp;
-  <b>총 방문자</b>: {{ total_visitor_count }}명
-</div>
+
+  <div class="visitor-card">
+    <b>금일 방문자</b>: {{ today_visitor_count }}명
+    &nbsp; | &nbsp;
+    <b>총 방문자</b>: {{ total_visitor_count }}명
+  </div>
 
 </body>
 </html>
