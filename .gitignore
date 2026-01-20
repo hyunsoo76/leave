@@ -15,9 +15,11 @@ venv/
 db.sqlite3
 db.sqlite3.*
 *.sqlite3
+*.sqlite3-journal
 
 # migrations 캐시는 제외 (마이그레이션 파일은 커밋됨)
 **/__pycache__/
 
 # ===== OS =====
 .DS_Store
+.vscode/
