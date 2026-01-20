@@ -8,3 +8,12 @@ __pycache__/
 # venv
 venv/
 
+# Django SQLite database
+db.sqlite3
+*.sqlite3
+*.db
+
+# SQLite backups
+*.bak*
+*.backup*
+*.sqlite3.*
