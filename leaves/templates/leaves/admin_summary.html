@@ -51,19 +51,19 @@
       margin-bottom:10px;
     }
     .calendar-embed-wrap {
-      /* ✅ 가로폭 줄이고 가운데 정렬 */
-      max-width: 1100px;
+      max-width: 1400px;  /* ✅ 가로 더 크게 */
       margin: 0 auto;
     }
+
     .calendar-embed {
       width: 100%;
-      /* ✅ 세로는 조금 늘리고, 화면에 따라 자동 조절 */
-      height: calc(100vh - 180px);
-      min-height: 720px;   /* 기존 650 -> 더 넉넉하게 */
-      max-height: 900px;   /* 너무 과도하게 커지는 것 방지 */
+      height: calc(100vh - 120px); /* ✅ 더 크게 보이도록 */
+      min-height: 900px;           /* ✅ 최소 높이 증가 */
+      max-height: 1100px;          /* ✅ 너무 큰 화면에서도 여유 */
       border: 0;
       border-radius: 12px;
     }
+
 
     /* ===== 방문자 카드 ===== */
     .visitor-card {
