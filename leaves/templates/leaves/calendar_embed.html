@@ -9,24 +9,37 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
   <style>
-    /* iframe 안에서 스크롤바 생기지 않게 */
-    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial; padding:12px; }
+          /* iframe 안에서 스크롤바 생기지 않게 + 바깥 여백 제거 */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background: transparent;
+      }
 
-    @media (max-width: 480px) {
-      body { padding: 6px; }   /* ✅ 모바일에서 더 넓게 */
-    }
+      /* ✅ 회색 박스의 원인: body padding 제거 */
+      body {
+        font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial;
+        padding: 0;
+      }
+
+      /* 모바일도 동일하게 0 유지 */
+      @media (max-width: 480px) {
+        body { padding: 0; }
+      }
+
 
     /* ✅ 핵심: 모바일에서는 max-width 해제해서 꽉 차게 */
     #calendar{
-      width: 100%;
-      height: 100%;
-      max-width: none;  /* PC에서는 유지 */
-      margin: 0;
-    }
-    @media (max-width: 480px) {
-      #calendar { max-width: none; }  /* ✅ 모바일에서 제한 제거 */
-    }
+        width: 100%;
+        height: 100vh;        /* ✅ iframe 높이를 꽉 채움 */
+        max-width: 1400px;    /* ✅ PC에서 너무 퍼지지 않게(원하면 더 키워도 됨) */
+        margin: 0 auto;       /* ✅ 가운데 정렬 */
+      }
+      @media (max-width: 480px) {
+        #calendar { max-width: none; }  /* 모바일은 꽉차게 */
+      }
 
     .fc { margin: 0; }
 
@@ -404,8 +417,10 @@
 
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        /* ✅ 임베드에서 달력 크기/행 확장 */
         height: '100%',
-        contentHeight: 'auto',
+        expandRows: true,
+        fixedWeekCount: false,
 
         events: EVENTS_URL,
 
