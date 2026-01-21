@@ -6,6 +6,7 @@ from .models import VisitorStat
 EXCLUDE_PATH_PREFIXES = (
     "/static/",
     "/admin/",
+    "/leave/admin/",
     "/favicon.ico",
     "/leave/manage/",   # ✅ 관리자 화면 제외
     "/leave/embed/",   # iframe 달력
