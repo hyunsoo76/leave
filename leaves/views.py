@@ -299,9 +299,14 @@ def request_new(request):
                 # 예) 신청일: 2026-01-23 반차(오후)
                 apply_line = f"- 신청일: {start} 반차({half_label})" if half_label else f"- 신청일: {start} 반차"
             else:
-                # 예) 신청일: 2026-01-13 ~ 2026-01-13 연차
-                # (연차는 기간이 하루든 여러날이든 동일 포맷)
-                apply_line = f"- 신청일: {start} ~ {end} 연차"
+                # # 예) 신청일: 2026-01-13 ~ 2026-01-13 연차
+                # # (연차는 기간이 하루든 여러날이든 동일 포맷)
+                # apply_line = f"- 신청일: {start} ~ {end} 연차"
+                 # ✅ 연차: 1일이면 하루만, 2일 이상이면 기간 표시
+                if start == end:
+                    apply_line = f"- 신청일: {start} 연차"
+                else:
+                    apply_line = f"- 신청일: {start} ~ {end} 연차"
 
             reason_line = f"- 사유: {reason}\n" if reason else ""
 
