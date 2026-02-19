@@ -637,7 +637,57 @@
       // 렌더 직후 폭 계산 보정 (간헐적 틀어짐 방지)
       setTimeout(() => calendar.updateSize(), 0);
       window.addEventListener('resize', () => calendar.updateSize());
+
+        // ✅ 모바일 스와이프: 이전달/다음달
+      (function enableSwipeToChangeMonth() {
+        const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
+        let xStart = null;
+        let yStart = null;
+
+        const THRESHOLD_X = 60;   // 가로 스와이프 최소 거리
+        const THRESHOLD_Y = 80;   // 세로 움직임이 크면 무시(스크롤로 간주)
+
+        // 달력 안에서만 터치 감지
+        const target = calendarEl;
+
+        target.addEventListener('touchstart', function (e) {
+          if (!isMobile()) return;
+
+          const t = e.touches[0];
+          xStart = t.clientX;
+          yStart = t.clientY;
+        }, { passive: true });
+
+        target.addEventListener('touchend', function (e) {
+          if (!isMobile()) return;
+          if (xStart === null || yStart === null) return;
+          if (document.querySelector('.fc-popover')) return;
+
+
+          const t = e.changedTouches[0];
+          const dx = t.clientX - xStart;
+          const dy = t.clientY - yStart;
+
+          // 세로 스크롤이 큰 경우는 무시
+          if (Math.abs(dy) > THRESHOLD_Y) {
+            xStart = yStart = null;
+            return;
+          }
+
+          if (dx <= -THRESHOLD_X) {
+            // 왼쪽 스와이프 => 다음달
+            calendar.next();
+          } else if (dx >= THRESHOLD_X) {
+            // 오른쪽 스와이프 => 이전달
+            calendar.prev();
+          }
+
+          xStart = yStart = null;
+        }, { passive: true });
+      })();
     });
+    
 
         function copyToClipboard() {
         const text = document.getElementById("copyText").value;
