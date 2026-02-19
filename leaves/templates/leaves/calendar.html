@@ -370,6 +370,17 @@
           border-color: #003366 !important;
         }
 
+                /* ✅ iPhone에서도 햅틱 느낌(가짜): 살짝 '톡' 움직이는 애니메이션 */
+        @keyframes fakeHapticNudge {
+          0%   { transform: translate3d(0,0,0); }
+          35%  { transform: translate3d(0,-2px,0); }
+          70%  { transform: translate3d(0,1px,0); }
+          100% { transform: translate3d(0,0,0); }
+        }
+        #calendar.fake-haptic {
+          animation: fakeHapticNudge 120ms ease-out;
+        }
+
 
 
   </style>
@@ -637,6 +648,85 @@
       // 렌더 직후 폭 계산 보정 (간헐적 틀어짐 방지)
       setTimeout(() => calendar.updateSize(), 0);
       window.addEventListener('resize', () => calendar.updateSize());
+
+            // =========================
+      // ✅ Mobile swipe + haptic (Android 진동 + iPhone 시각효과)
+      // =========================
+      const isTouchDevice = () =>
+        'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+      // ✅ 가짜 햅틱(아이폰 포함): 달력에 짧은 nudge 애니메이션
+      function fakeHaptic() {
+        // animation 재시작을 위해 class 토글
+        calendarEl.classList.remove('fake-haptic');
+        // reflow 강제
+        void calendarEl.offsetWidth;
+        calendarEl.classList.add('fake-haptic');
+      }
+
+      // ✅ 실제 진동(대부분 안드로이드만)
+      function realVibrate() {
+        try {
+          if (navigator.vibrate) navigator.vibrate(10);
+        } catch (e) {}
+      }
+
+      // ✅ 통합 햅틱
+      function hapticTick() {
+        realVibrate();   // 가능하면 진동
+        fakeHaptic();    // iOS에서도 체감용
+      }
+
+      if (isTouchDevice()) {
+        let startX = 0;
+        let startY = 0;
+        let tracking = false;
+
+        // 스크롤(위아래)과 스와이프(좌우) 구분 임계값
+        const SWIPE_MIN_X = 60;
+        const SWIPE_MAX_Y = 50;
+
+        calendarEl.addEventListener(
+          'touchstart',
+          (e) => {
+            if (!e.touches || e.touches.length !== 1) return;
+            tracking = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+          },
+          { passive: true }
+        );
+
+        calendarEl.addEventListener(
+          'touchend',
+          (e) => {
+            if (!tracking) return;
+            tracking = false;
+
+            const t = e.changedTouches && e.changedTouches[0];
+            if (!t) return;
+
+            const dx = t.clientX - startX;
+            const dy = t.clientY - startY;
+
+            // 위아래 움직임이 크면 스와이프 아님(스크롤)
+            if (Math.abs(dy) > SWIPE_MAX_Y) return;
+
+            // 좌우 이동이 충분해야 스와이프 인정
+            if (Math.abs(dx) < SWIPE_MIN_X) return;
+
+            if (dx < 0) {
+              calendar.next();   // 다음 달
+              hapticTick();
+            } else {
+              calendar.prev();   // 이전 달
+              hapticTick();
+            }
+          },
+          { passive: true }
+        );
+      }
+
 
         // ✅ 모바일 스와이프: 이전달/다음달
       (function enableSwipeToChangeMonth() {
