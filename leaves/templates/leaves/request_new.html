@@ -17,13 +17,18 @@
     .err { color:#d00; font-size: 13px; margin: 6px 0 0; }
     .topline { display:flex; justify-content: space-between; align-items:center; gap: 10px; }
     .name { font-weight: 700; }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="topline">
       <h2>휴무 신청</h2>
-      <a href="/" class="muted">달력으로</a>
+      <a href="{% url 'leaves:calendar' %}" class="muted">달력으로</a>
     </div>
 
     <div class="card">
@@ -33,7 +38,7 @@
         </div>
       {% endif %}
 
-      <form method="post">
+      <form method="post" id="leaveRequestForm">
         {% csrf_token %}
         <input type="hidden" name="birth" value="{{ birth }}">
 
@@ -87,8 +92,7 @@
           {% endif %}
         </div>
 
-        <button class="btn" type="submit">신청</button>
-
+        <button class="btn" type="submit" id="submitLeaveBtn">신청</button>
         <div class="muted" style="margin-top:12px;">
           {% if selected_date %}선택 날짜: {{ selected_date|date:"Y-m-d" }}{% endif %}
         </div>
@@ -97,6 +101,7 @@
   </div>
 
   <script>
+      
     function toggleHalfUI() {
       const leaveType = document.getElementById("leaveType");
       const halfDayRow = document.getElementById("halfDayRow");
@@ -121,6 +126,11 @@
       const startDate = document.getElementById("startDate");
       const endDate = document.getElementById("endDate");
 
+      const form = document.getElementById("leaveRequestForm");
+      const submitBtn = document.getElementById("submitLeaveBtn");
+
+      let isSubmitting = false;
+
       toggleHalfUI();
 
       leaveType.addEventListener("change", toggleHalfUI);
@@ -128,6 +138,18 @@
         if (leaveType.value === "HALF" && endDate) {
           endDate.value = startDate.value;
         }
+      });
+
+      form.addEventListener("submit", (e) => {
+        if (isSubmitting) {
+          e.preventDefault();
+          return;
+        }
+
+        isSubmitting = true;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "신청 중...";
       });
     });
   </script>
