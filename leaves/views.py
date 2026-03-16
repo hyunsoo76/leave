@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.urls import reverse
 from django.utils.dateparse import parse_date
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 
 from .models import Employee, LeaveYear, LeaveRequest, CompDayGrant
 from .forms import LeaveRequestCreateForm
@@ -248,6 +248,32 @@ def request_new(request):
             half_day = form.cleaned_data.get("half_day")
             start = form.cleaned_data["start_date"]
             end = form.cleaned_data.get("end_date") or start
+
+            # ✅ 같은 직원 + 같은 날짜(기간 겹침 포함) 중복 신청 방지
+            duplicate_qs = LeaveRequest.objects.filter(
+                employee=employee,
+                start_date__lte=end,
+            ).filter(
+                Q(end_date__gte=start) |
+                Q(end_date__isnull=True, start_date__gte=start, start_date__lte=end)
+            )
+
+            if duplicate_qs.exists():
+                messages.error(
+                    request,
+                    f"{employee.name}님은 선택한 날짜에 이미 휴무를 신청했습니다."
+                )
+                return render(
+                    request,
+                    "leaves/request_new.html",
+                    {
+                        "employee": employee if len(candidates) == 1 else None,
+                        "candidates": employee_choices,
+                        "birth": birth,
+                        "selected_date": selected_date,
+                        "form": form,
+                    },
+                )
 
             # LeaveYear(년도계정)
             ly, _ = LeaveYear.objects.get_or_create(
