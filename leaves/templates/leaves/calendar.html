@@ -486,12 +486,18 @@
     </div>
   </div>
 
+  <form id="myLeaveForm" method="post" action="{% url 'leaves:me_lookup' %}" style="display:none;">
+    {% csrf_token %}
+    <input type="hidden" name="birth" id="myLeaveBirthInput">
+  </form>
+
   <script>
     const EVENTS_URL = "{% url 'leaves:events_api' %}";
     const REQUEST_NEW_URL = "{% url 'leaves:request_new' %}";
-
+    const MY_LEAVE_URL = "{% url 'leaves:me_lookup' %}";
     // ===== Modal helpers =====
     const backdrop = document.getElementById('authModalBackdrop');
+    const authTitle = document.getElementById('authTitle');
     const selectedDateText = document.getElementById('selectedDateText');
     const birthInput = document.getElementById('birthInput');
     const pinWrap = document.getElementById('pinWrap');
@@ -499,6 +505,10 @@
     const authError = document.getElementById('authError');
     const btnCancel = document.getElementById('btnCancel');
     const btnOk = document.getElementById('btnOk');
+    const myLeaveForm = document.getElementById('myLeaveForm');
+    const myLeaveBirthInput = document.getElementById('myLeaveBirthInput');
+
+let authMode = 'request';
 
     let selectedDateStr = null;
 
@@ -517,11 +527,23 @@ function clearPins() {
   syncBirthInput();
 }
 
-function openAuthModal(dateStr) {
+function openAuthModal(mode, dateStr = null) {
+  authMode = mode;
   selectedDateStr = dateStr;
-  selectedDateText.textContent = dateStr;
+
   authError.textContent = '';
   clearPins();
+
+  if (mode === 'request') {
+    authTitle.textContent = '휴무 신청';
+    selectedDateText.parentElement.style.display = 'block';
+    selectedDateText.textContent = dateStr || '-';
+  } else {
+    authTitle.textContent = '내 연차 보기';
+    selectedDateText.parentElement.style.display = 'none';
+    selectedDateText.textContent = '-';
+  }
+
   backdrop.style.display = 'flex';
   backdrop.setAttribute('aria-hidden', 'false');
 
@@ -537,11 +559,13 @@ function closeAuthModal() {
   authError.textContent = '';
   clearPins();
   selectedDateStr = null;
+  authMode = 'request';
+  authTitle.textContent = '휴무 신청';
+  selectedDateText.parentElement.style.display = 'block';
 }
 
-function goRequestNew() {
+function submitAuth() {
   const birth = birthInput.value.trim();
-  if (!selectedDateStr) return;
 
   if (!/^\d{6}$/.test(birth)) {
     authError.textContent = '생년월일 6자리를 입력해주세요.';
@@ -551,12 +575,19 @@ function goRequestNew() {
     return;
   }
 
+  if (authMode === 'myLeave') {
+    myLeaveBirthInput.value = birth;
+    myLeaveForm.submit();
+    return;
+  }
+
+  if (!selectedDateStr) return;
+
   window.location.href =
     `${REQUEST_NEW_URL}?date=${encodeURIComponent(selectedDateStr)}&birth=${encodeURIComponent(birth)}`;
 }
-
     btnCancel.addEventListener('click', closeAuthModal);
-    btnOk.addEventListener('click', goRequestNew);
+    btnOk.addEventListener('click', submitAuth);
 
     backdrop.addEventListener('click', (e) => {
       if (e.target === backdrop) closeAuthModal();
@@ -672,7 +703,7 @@ pinInputs.forEach((input, index) => {
           myLeave: {
             text: '내 연차 보기',
             click: function () {
-              window.location.href = "{% url 'leaves:me_lookup' %}";
+              openAuthModal('myLeave');
             }
           }
         },
@@ -709,7 +740,7 @@ pinInputs.forEach((input, index) => {
             return;                         // ❌ 여기서 종료
           }
 
-        openAuthModal(info.dateStr);      // ✅ 오늘 이후만 허용
+        openAuthModal('request', info.dateStr);    // ✅ 오늘 이후만 허용
           },
         
         dayCellDidMount: function(arg) {
