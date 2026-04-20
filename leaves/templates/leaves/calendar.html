@@ -540,7 +540,7 @@ function openAuthModal(mode, dateStr = null) {
     selectedDateText.textContent = dateStr || '-';
   } else {
     authTitle.textContent = '내 연차 보기';
-    selectedDateText.parentElement.style.display = 'none';
+    selectedDateText.parentElement.style.display = 'block';
     selectedDateText.textContent = '-';
   }
 
@@ -606,14 +606,16 @@ pinInputs.forEach((input, index) => {
     }
 
     if (birthInput.value.length === 6) {
-      goRequestNew();
+      setTimeout(() => {
+        submitAuth();
+      }, 60);
     }
   });
 
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      goRequestNew();
+      submitAuth();
       return;
     }
 
@@ -666,7 +668,9 @@ pinInputs.forEach((input, index) => {
     pinInputs[nextIndex].focus();
 
     if (birthInput.value.length === 6) {
-      goRequestNew();
+      setTimeout(() => {
+        submitAuth();
+      }, 60);
     }
   });
 
