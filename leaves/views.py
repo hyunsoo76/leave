@@ -812,6 +812,35 @@ def admin_summary(request):
         {"rows": rows, "year": year, "today_visitor_count": today_count, "total_visitor_count": total_count},
     )
 
+@require_http_methods(["POST"])
+def verify_birth(request):
+    birth = (request.POST.get("birth") or "").strip()
+
+    exists = Employee.objects.filter(
+        is_active=True,
+        birth_yyMMdd=birth
+    ).exists()
+
+    return JsonResponse({
+        "ok": exists
+    })
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+
+@require_http_methods(["POST"])
+def verify_birth(request):
+    birth = (request.POST.get("birth") or "").strip()
+
+    exists = Employee.objects.filter(
+        is_active=True,
+        birth_yyMMdd=birth
+    ).exists()
+
+    return JsonResponse({
+        "ok": exists
+    })
+
 @require_http_methods(["GET", "POST"])
 def me_lookup(request):
     if request.method == "POST":
