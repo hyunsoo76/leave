@@ -12,375 +12,412 @@
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
-  <style>
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      padding: 10px;
-      font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial;
-      overflow-x: hidden;
+<style>
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    padding: 10px;
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial;
+    overflow-x: hidden;
+  }
+
+  /* ✅ 너무 커지지 않게 폭 제한 (여기 숫자만 조절하면 전체 크기 느낌이 바뀜) */
+  #calendar {
+    width: 100%;
+    max-width: 1250px;
+    margin: 0 auto;
+    touch-action: pan-y;
+  }
+
+  /* ✅ 달력이 세로로 너무 커지는 것 방지: 날짜칸 최소 높이 살짝 줄임 */
+  .fc .fc-daygrid-day-frame { min-height: 90px; }
+  @media (min-width: 1400px) {
+    .fc .fc-daygrid-day-frame { min-height: 100px; }
+  }
+
+  /* ===== Modal ===== */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 9999;
+  }
+  .modal {
+    width: 100%;
+    max-width: 380px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  .modal h3 { margin: 0 0 8px; font-size: 18px; }
+  .modal .sub { color: #666; font-size: 13px; margin-bottom: 12px; }
+
+.modal input[type="hidden"] {
+  display: none;
+}
+
+.pin-wrap {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.pin-box {
+  width: 100%;
+  max-width: 48px;
+  height: 56px;
+  border: 1px solid #d9d9de;
+  border-radius: 14px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  outline: none;
+  background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .12s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.pin-box:focus {
+  border-color: #111;
+  box-shadow: 0 0 0 4px rgba(17,17,17,0.08);
+}
+
+.pin-wrap.shake {
+  animation: pinShake .34s ease-in-out;
+}
+
+@keyframes pinShake {
+  0% { transform: translateX(0); }
+  15% { transform: translateX(-7px); }
+  30% { transform: translateX(7px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+  .modal .row { display: flex; gap: 10px; margin-top: 12px; }
+  .btn {
+    flex: 1;
+    border: 0;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .btn-cancel { background: #eee; }
+  .btn-ok { background: #111; color: #fff; }
+  .error { color: #d00; font-size: 12px; margin-top: 8px; min-height: 16px; }
+
+  /* ===== 요일 색상 ===== */
+  .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion { color: #d00; font-weight: 700; }
+  .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion { color: #06c; font-weight: 700; }
+  .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number { color: #d00; font-weight: 700; }
+  .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number { color: #06c; font-weight: 700; }
+
+  /* ===== 이벤트 글자 잘림 방지 + 가독성 ===== */
+  .fc .fc-daygrid-event { white-space: normal; }
+  .fc .fc-daygrid-event .fc-event-title { white-space: normal; }
+  .fc .fc-daygrid-event .fc-event-title,
+  .fc .fc-daygrid-event .fc-event-title-container {
+    font-size: 12px;
+    line-height: 1.15;
+    font-weight: 700;
+  }
+
+  /* 반차 라벨(오전/오후) 흰색 */
+  .fc-half-label {
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-top: 2px;
+  }
+
+  /* 헤더 모바일 줄바꿈 */
+  .fc .fc-header-toolbar { gap: 8px; }
+  .fc .fc-toolbar-chunk { display: flex; align-items: center; gap: 8px; }
+  @media (max-width: 480px) {
+    .fc .fc-header-toolbar { flex-wrap: wrap; }
+    .fc .fc-toolbar-title { font-size: 22px; }
+    .fc .fc-button { padding: 6px 10px; font-size: 14px; }
+    .fc .fc-daygrid-day-frame { min-height: 78px; }
+  }
+
+  /* ===== +N(더보기) 팝오버만 다크(검정) 스타일 ===== */
+    .fc .fc-more-popover{
+      background: #111 !important;
+      border: 1px solid #333 !important;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35) !important;
     }
 
-    /* ✅ 너무 커지지 않게 폭 제한 (여기 숫자만 조절하면 전체 크기 느낌이 바뀜) */
-    #calendar {
-      width: 100%;
-      max-width: 1250px;
-      margin: 0 auto;
-      touch-action: pan-y;
+    .fc .fc-more-popover .fc-popover-header{
+      background: #111 !important;
+      color: #fff !important;
+      border-bottom: 1px solid #333 !important;
     }
 
-    /* ✅ 달력이 세로로 너무 커지는 것 방지: 날짜칸 최소 높이 살짝 줄임 */
-    .fc .fc-daygrid-day-frame { min-height: 90px; }
-    @media (min-width: 1400px) {
-      .fc .fc-daygrid-day-frame { min-height: 100px; }
-    }
-
-    /* ===== Modal ===== */
-    .modal-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 9999;
-    }
-    .modal {
-      width: 100%;
-      max-width: 380px;
-      background: #fff;
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    .modal h3 { margin: 0 0 8px; font-size: 18px; }
-    .modal .sub { color: #666; font-size: 13px; margin-bottom: 12px; }
-    .modal input {
-      width: 100%;
-      font-size: 18px;
-      padding: 12px 12px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      outline: none;
-    }
-    .modal .row { display: flex; gap: 10px; margin-top: 12px; }
-    .btn {
-      flex: 1;
-      border: 0;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .btn-cancel { background: #eee; }
-    .btn-ok { background: #111; color: #fff; }
-    .error { color: #d00; font-size: 12px; margin-top: 8px; min-height: 16px; }
-
-    /* ===== 요일 색상 ===== */
-    .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion { color: #d00; font-weight: 700; }
-    .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion { color: #06c; font-weight: 700; }
-    .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number { color: #d00; font-weight: 700; }
-    .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number { color: #06c; font-weight: 700; }
-
-    /* ===== 이벤트 글자 잘림 방지 + 가독성 ===== */
-    .fc .fc-daygrid-event { white-space: normal; }
-    .fc .fc-daygrid-event .fc-event-title { white-space: normal; }
-    .fc .fc-daygrid-event .fc-event-title,
-    .fc .fc-daygrid-event .fc-event-title-container {
-      font-size: 12px;
-      line-height: 1.15;
+    /* 헤더 타이틀(날짜) */
+    .fc .fc-more-popover .fc-popover-title{
+      color: #fff !important;
       font-weight: 700;
     }
 
-    /* 반차 라벨(오전/오후) 흰색 */
-    .fc-half-label {
-      color: #fff;
-      font-size: 11px;
+    /* 닫기(X) 버튼 */
+    .fc .fc-more-popover .fc-popover-close{
+      color: #fff !important;
+      opacity: 0.9;
+    }
+    .fc .fc-more-popover .fc-popover-close:hover{
+      opacity: 1;
+    }
+
+    /* 팝오버 안 이벤트 리스트 영역 */
+    .fc .fc-more-popover .fc-popover-body{
+      background: #111 !important;
+      color: #fff !important;
+    }
+
+    /* 팝오버 안 이벤트(바) 텍스트는 흰색으로 */
+    .fc .fc-more-popover .fc-event,
+    .fc .fc-more-popover .fc-event .fc-event-title,
+    .fc .fc-more-popover .fc-event .fc-event-time{
+      color: #fff !important;
+    }
+
+    /* 메모 이벤트(회색 계열) */
+    /* .fc .fc-memo-event,
+    .fc .fc-memo-event .fc-event-main {
+      background: rgba(0,0,0,0.65) !important;
+      border-color: rgba(0,0,0,0.65) !important;
+    }
+    .fc .fc-memo-event .fc-event-title {
+      color: #fff !important;
       font-weight: 600;
-      line-height: 1.1;
-      margin-top: 2px;
+    } */
+    
+    /* 공휴일 이벤트를 글자만 심플하게(배경 없이) + 빨간색 */
+    .fc-holiday-event,
+    .fc-holiday-event .fc-event-main,
+    .fc-holiday-event .fc-event-title {
+      background: transparent !important;
+      border: 0 !important;
+      color: #d00 !important;
+      font-weight: 700;
+    }
+    
+    /* 공휴일 이벤트가 있는 날짜 셀 */
+    .fc-daygrid-day:has(.fc-holiday-event)
+      .fc-daygrid-day-number {
+      color: #d00 !important;
+      font-weight: 700;
     }
 
-    /* 헤더 모바일 줄바꿈 */
-    .fc .fc-header-toolbar { gap: 8px; }
-    .fc .fc-toolbar-chunk { display: flex; align-items: center; gap: 8px; }
-    @media (max-width: 480px) {
-      .fc .fc-header-toolbar { flex-wrap: wrap; }
-      .fc .fc-toolbar-title { font-size: 22px; }
-      .fc .fc-button { padding: 6px 10px; font-size: 14px; }
-      .fc .fc-daygrid-day-frame { min-height: 78px; }
+    /* 월(크게) + 년도(작게) */
+    .fc-title-wrap{
+      display:flex;
+      align-items:flex-end;
+      gap:10px;
+    }
+    .fc-title-month{
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .fc-title-year{
+      font-size: 16px;
+      font-weight: 600;
+      opacity: .7;
+      line-height: 1;
+      transform: translateY(-2px); /* 살짝 위로(취향) */
     }
 
-    /* ===== +N(더보기) 팝오버만 다크(검정) 스타일 ===== */
-      .fc .fc-more-popover{
-        background: #111 !important;
-        border: 1px solid #333 !important;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.35) !important;
-      }
-
-      .fc .fc-more-popover .fc-popover-header{
-        background: #111 !important;
-        color: #fff !important;
-        border-bottom: 1px solid #333 !important;
-      }
-
-      /* 헤더 타이틀(날짜) */
-      .fc .fc-more-popover .fc-popover-title{
-        color: #fff !important;
-        font-weight: 700;
-      }
-
-      /* 닫기(X) 버튼 */
-      .fc .fc-more-popover .fc-popover-close{
-        color: #fff !important;
-        opacity: 0.9;
-      }
-      .fc .fc-more-popover .fc-popover-close:hover{
-        opacity: 1;
-      }
-
-      /* 팝오버 안 이벤트 리스트 영역 */
-      .fc .fc-more-popover .fc-popover-body{
-        background: #111 !important;
-        color: #fff !important;
-      }
-
-      /* 팝오버 안 이벤트(바) 텍스트는 흰색으로 */
-      .fc .fc-more-popover .fc-event,
-      .fc .fc-more-popover .fc-event .fc-event-title,
-      .fc .fc-more-popover .fc-event .fc-event-time{
-        color: #fff !important;
-      }
-
-      /* 메모 이벤트(회색 계열) */
-      /* .fc .fc-memo-event,
-      .fc .fc-memo-event .fc-event-main {
-        background: rgba(0,0,0,0.65) !important;
-        border-color: rgba(0,0,0,0.65) !important;
-      }
-      .fc .fc-memo-event .fc-event-title {
-        color: #fff !important;
-        font-weight: 600;
-      } */
-      
-      /* 공휴일 이벤트를 글자만 심플하게(배경 없이) + 빨간색 */
-      .fc-holiday-event,
-      .fc-holiday-event .fc-event-main,
-      .fc-holiday-event .fc-event-title {
-        background: transparent !important;
-        border: 0 !important;
-        color: #d00 !important;
-        font-weight: 700;
-      }
-      
-      /* 공휴일 이벤트가 있는 날짜 셀 */
-      .fc-daygrid-day:has(.fc-holiday-event)
-        .fc-daygrid-day-number {
-        color: #d00 !important;
-        font-weight: 700;
-      }
-
-      /* 월(크게) + 년도(작게) */
-      .fc-title-wrap{
+    /* ✅ 타이틀: 월 크게 + 년 작게 */
+      .fc .fc-toolbar-title{
         display:flex;
-        align-items:flex-end;
+        align-items:baseline;
         gap:10px;
       }
+
       .fc-title-month{
-        font-size: 34px;
-        font-weight: 800;
-        line-height: 1;
+        font-size:40px;    /* 월 크게 */
+        font-weight:800;
+        line-height:1;
       }
+
       .fc-title-year{
-        font-size: 16px;
-        font-weight: 600;
-        opacity: .7;
-        line-height: 1;
-        transform: translateY(-2px); /* 살짝 위로(취향) */
+        font-size:16px;    /* 년 작게 */
+        font-weight:600;
+        opacity:.75;
+        line-height:1;
       }
 
-      /* ✅ 타이틀: 월 크게 + 년 작게 */
-        .fc .fc-toolbar-title{
-          display:flex;
-          align-items:baseline;
-          gap:10px;
+      .only-mobile { display:none; }
+      @media (max-width: 768px) {
+        .only-mobile { display:inline-block; }
+      }
+
+              /* ===== 1) 메모 공통 모양 (색상은 아래 memo-*가 담당) ===== */
+      .fc-daygrid-event.fc-memo-event {
+        border-radius: 8px !important;
+        padding: 2px 6px !important;
+        box-shadow: none !important;
+        cursor: default !important;
+      }
+
+      /* FullCalendar가 기본으로 넣는 검정/회색 배경이 끼어들면 제거 */
+      .fc-daygrid-event.fc-memo-event,
+      .fc-daygrid-event.fc-memo-event .fc-event-main,
+      .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event .fc-event-title-container {
+        background: transparent !important;
+        border-color: transparent !important;
+      }
+
+      /* 제목/시간 공통(기본값) - 색상별에서 덮어씀 */
+      .fc-daygrid-event.fc-memo-event .fc-event-title,
+      .fc-daygrid-event.fc-memo-event .fc-event-time {
+        font-weight: 700 !important;
+      }
+
+      /* ===== 2) 메모 색상별 ===== */
+
+      /* GREEN */
+      .fc-daygrid-event.fc-memo-event.memo-green,
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title-container {
+        background-color: #1b7f3a !important;
+        border-color: #1b7f3a !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-green .fc-event-time {
+        color: #b9ffb9 !important;
+      }
+
+      /* BLUE */
+      .fc-daygrid-event.fc-memo-event.memo-blue,
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title-container {
+        background-color: #1e5bb8 !important;
+        border-color: #1e5bb8 !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-time {
+        color: #e9f1ff !important;
+      }
+
+      /* YELLOW */
+      .fc-daygrid-event.fc-memo-event.memo-yellow,
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title-container {
+        background-color: #b58a00 !important;
+        border-color: #b58a00 !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-time {
+        color: #111 !important;
+      }
+
+      /* RED */
+      .fc-daygrid-event.fc-memo-event.memo-red,
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title-container {
+        background-color: #b11f2a !important;
+        border-color: #b11f2a !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-red .fc-event-time {
+        color: #fff !important;
+      }
+
+      /* GRAY */
+      .fc-daygrid-event.fc-memo-event.memo-gray,
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-main,
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-main-frame,
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-title-container {
+        background-color: #555 !important;
+        border-color: #555 !important;
+      }
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-title,
+      .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-time {
+        color: #fff !important;
+      }
+              
+              /* ===== 메모: 웹은 전체 표시 / 모바일만 2줄 + 아래쪽 … 표시 ===== */
+
+      /* ✅ 웹(PC): 줄임/말줄임 해제 (그냥 다 보이게) */
+      @media (min-width: 769px) {
+        .fc-daygrid-event.fc-memo-event .fc-event-title {
+          display: block !important;
+          white-space: normal !important;
+          overflow: visible !important;
+          text-overflow: clip !important;
         }
 
-        .fc-title-month{
-          font-size:40px;    /* 월 크게 */
-          font-weight:800;
-          line-height:1;
+        /* 웹에서는 … 표시 안 함 */
+        .fc-daygrid-event.fc-memo-event::after {
+          content: "" !important;
+        }
+      }
+
+      /* ✅ 모바일: 2줄까지만 표시 */
+      @media (max-width: 768px) {
+        .fc-daygrid-event.fc-memo-event .fc-event-title {
+          display: -webkit-box !important;
+          -webkit-box-orient: vertical !important;
+          -webkit-line-clamp: 2 !important;
+          line-clamp: 2 !important;
+          overflow: hidden !important;
+          white-space: normal !important;
+          text-overflow: ellipsis !important;
         }
 
-        .fc-title-year{
-          font-size:16px;    /* 년 작게 */
-          font-weight:600;
-          opacity:.75;
-          line-height:1;
-        }
-
-        .only-mobile { display:none; }
-        @media (max-width: 768px) {
-          .only-mobile { display:inline-block; }
-        }
-
-                /* ===== 1) 메모 공통 모양 (색상은 아래 memo-*가 담당) ===== */
+        /* ✅ … 를 "타이틀 뒤"가 아니라 "2줄 아래(박스 하단)"에 따로 표시 */
         .fc-daygrid-event.fc-memo-event {
-          border-radius: 8px !important;
-          padding: 2px 6px !important;
-          box-shadow: none !important;
-          cursor: default !important;
+          position: relative;
+          padding-bottom: 12px !important;   /* 아래 … 자리 확보 */
+          cursor: pointer !important;
         }
 
-        /* FullCalendar가 기본으로 넣는 검정/회색 배경이 끼어들면 제거 */
-        .fc-daygrid-event.fc-memo-event,
-        .fc-daygrid-event.fc-memo-event .fc-event-main,
-        .fc-daygrid-event.fc-memo-event .fc-event-main-frame,
-        .fc-daygrid-event.fc-memo-event .fc-event-title-container {
-          background: transparent !important;
-          border-color: transparent !important;
+        .fc-daygrid-event.fc-memo-event::after {
+          content: "…";
+          position: absolute;
+          color: #fff;
+          left: 8px;
+          bottom: 2px;                       /* ✅ 두 줄 아래쪽으로 내려감 */
+          font-weight: 900;
+          opacity: 0.85;
+          pointer-events: none;
         }
+      }
 
-        /* 제목/시간 공통(기본값) - 색상별에서 덮어씀 */
-        .fc-daygrid-event.fc-memo-event .fc-event-title,
-        .fc-daygrid-event.fc-memo-event .fc-event-time {
-          font-weight: 700 !important;
-        }
+              /* ===== 직원 연차/반차(공통) 색상 ===== */
+      .fc-daygrid-event.fc-leave-event,
+      .fc-daygrid-event.fc-leave-event .fc-event-main,
+      .fc-daygrid-event.fc-leave-event .fc-event-main-frame,
+      .fc-daygrid-event.fc-leave-event .fc-event-title-container {
+        background-color: #003366 !important;
+        border-color: #003366 !important;
+      }
 
-        /* ===== 2) 메모 색상별 ===== */
-
-        /* GREEN */
-        .fc-daygrid-event.fc-memo-event.memo-green,
-        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main,
-        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-main-frame,
-        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title-container {
-          background-color: #1b7f3a !important;
-          border-color: #1b7f3a !important;
-        }
-        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-title,
-        .fc-daygrid-event.fc-memo-event.memo-green .fc-event-time {
-          color: #b9ffb9 !important;
-        }
-
-        /* BLUE */
-        .fc-daygrid-event.fc-memo-event.memo-blue,
-        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main,
-        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-main-frame,
-        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title-container {
-          background-color: #1e5bb8 !important;
-          border-color: #1e5bb8 !important;
-        }
-        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-title,
-        .fc-daygrid-event.fc-memo-event.memo-blue .fc-event-time {
-          color: #e9f1ff !important;
-        }
-
-        /* YELLOW */
-        .fc-daygrid-event.fc-memo-event.memo-yellow,
-        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main,
-        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-main-frame,
-        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title-container {
-          background-color: #b58a00 !important;
-          border-color: #b58a00 !important;
-        }
-        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-title,
-        .fc-daygrid-event.fc-memo-event.memo-yellow .fc-event-time {
-          color: #111 !important;
-        }
-
-        /* RED */
-        .fc-daygrid-event.fc-memo-event.memo-red,
-        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main,
-        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-main-frame,
-        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title-container {
-          background-color: #b11f2a !important;
-          border-color: #b11f2a !important;
-        }
-        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-title,
-        .fc-daygrid-event.fc-memo-event.memo-red .fc-event-time {
-          color: #fff !important;
-        }
-
-        /* GRAY */
-        .fc-daygrid-event.fc-memo-event.memo-gray,
-        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-main,
-        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-main-frame,
-        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-title-container {
-          background-color: #555 !important;
-          border-color: #555 !important;
-        }
-        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-title,
-        .fc-daygrid-event.fc-memo-event.memo-gray .fc-event-time {
-          color: #fff !important;
-        }
-                
-                /* ===== 메모: 웹은 전체 표시 / 모바일만 2줄 + 아래쪽 … 표시 ===== */
-
-        /* ✅ 웹(PC): 줄임/말줄임 해제 (그냥 다 보이게) */
-        @media (min-width: 769px) {
-          .fc-daygrid-event.fc-memo-event .fc-event-title {
-            display: block !important;
-            white-space: normal !important;
-            overflow: visible !important;
-            text-overflow: clip !important;
-          }
-
-          /* 웹에서는 … 표시 안 함 */
-          .fc-daygrid-event.fc-memo-event::after {
-            content: "" !important;
-          }
-        }
-
-        /* ✅ 모바일: 2줄까지만 표시 */
-        @media (max-width: 768px) {
-          .fc-daygrid-event.fc-memo-event .fc-event-title {
-            display: -webkit-box !important;
-            -webkit-box-orient: vertical !important;
-            -webkit-line-clamp: 2 !important;
-            line-clamp: 2 !important;
-            overflow: hidden !important;
-            white-space: normal !important;
-            text-overflow: ellipsis !important;
-          }
-
-          /* ✅ … 를 "타이틀 뒤"가 아니라 "2줄 아래(박스 하단)"에 따로 표시 */
-          .fc-daygrid-event.fc-memo-event {
-            position: relative;
-            padding-bottom: 12px !important;   /* 아래 … 자리 확보 */
-            cursor: pointer !important;
-          }
-
-          .fc-daygrid-event.fc-memo-event::after {
-            content: "…";
-            position: absolute;
-            color: #fff;
-            left: 8px;
-            bottom: 2px;                       /* ✅ 두 줄 아래쪽으로 내려감 */
-            font-weight: 900;
-            opacity: 0.85;
-            pointer-events: none;
-          }
-        }
-
-                /* ===== 직원 연차/반차(공통) 색상 ===== */
-        .fc-daygrid-event.fc-leave-event,
-        .fc-daygrid-event.fc-leave-event .fc-event-main,
-        .fc-daygrid-event.fc-leave-event .fc-event-main-frame,
-        .fc-daygrid-event.fc-leave-event .fc-event-title-container {
-          background-color: #003366 !important;
-          border-color: #003366 !important;
-        }
-
-                /* ✅ iPhone에서도 햅틱 느낌(가짜): 살짝 '톡' 움직이는 애니메이션 */
-        @keyframes fakeHapticNudge {
-          0%   { transform: translate3d(0,0,0); }
-          35%  { transform: translate3d(0,-2px,0); }
-          70%  { transform: translate3d(0,1px,0); }
-          100% { transform: translate3d(0,0,0); }
-        }
-        #calendar.fake-haptic {
-          animation: fakeHapticNudge 120ms ease-out;
-        }
+              /* ✅ iPhone에서도 햅틱 느낌(가짜): 살짝 '톡' 움직이는 애니메이션 */
+      @keyframes fakeHapticNudge {
+        0%   { transform: translate3d(0,0,0); }
+        35%  { transform: translate3d(0,-2px,0); }
+        70%  { transform: translate3d(0,1px,0); }
+        100% { transform: translate3d(0,0,0); }
+      }
+      #calendar.fake-haptic {
+        animation: fakeHapticNudge 120ms ease-out;
+      }
 
 
 
@@ -431,9 +468,15 @@
         생년월일 6자리(예: 760910)를 입력하세요.
       </div>
 
-      <input id="birthInput" inputmode="numeric" autocomplete="one-time-code"
-             placeholder="생년월일 6자리" maxlength="6" />
-
+      <div class="pin-wrap" id="pinWrap">
+        <input class="pin-box" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" />
+        <input class="pin-box" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" />
+        <input class="pin-box" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" />
+        <input class="pin-box" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" />
+        <input class="pin-box" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" />
+        <input class="pin-box" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" />
+      </div>
+      <input id="birthInput" type="hidden" />
       <div id="authError" class="error"></div>
 
       <div class="row">
@@ -451,41 +494,66 @@
     const backdrop = document.getElementById('authModalBackdrop');
     const selectedDateText = document.getElementById('selectedDateText');
     const birthInput = document.getElementById('birthInput');
+    const pinWrap = document.getElementById('pinWrap');
+    const pinInputs = Array.from(document.querySelectorAll('.pin-box'));
     const authError = document.getElementById('authError');
     const btnCancel = document.getElementById('btnCancel');
     const btnOk = document.getElementById('btnOk');
 
     let selectedDateStr = null;
 
-    function openAuthModal(dateStr) {
-      selectedDateStr = dateStr;
-      selectedDateText.textContent = dateStr;
-      authError.textContent = '';
-      birthInput.value = '';
-      backdrop.style.display = 'flex';
-      backdrop.setAttribute('aria-hidden', 'false');
-      setTimeout(() => birthInput.focus(), 50);
-    }
+function syncBirthInput() {
+  birthInput.value = pinInputs.map(input => input.value).join('');
+}
 
-    function closeAuthModal() {
-      backdrop.style.display = 'none';
-      backdrop.setAttribute('aria-hidden', 'true');
-      selectedDateStr = null;
-    }
+function shakePin() {
+  pinWrap.classList.remove('shake');
+  void pinWrap.offsetWidth;
+  pinWrap.classList.add('shake');
+}
 
-    function goRequestNew() {
-      const birth = birthInput.value.trim();
-      if (!selectedDateStr) return;
+function clearPins() {
+  pinInputs.forEach(input => input.value = '');
+  syncBirthInput();
+}
 
-      if (!/^\d{6}$/.test(birth)) {
-        authError.textContent = '생년월일 6자리 숫자로 입력해주세요. (예: 760910)';
-        birthInput.focus();
-        return;
-      }
+function openAuthModal(dateStr) {
+  selectedDateStr = dateStr;
+  selectedDateText.textContent = dateStr;
+  authError.textContent = '';
+  clearPins();
+  backdrop.style.display = 'flex';
+  backdrop.setAttribute('aria-hidden', 'false');
 
-      window.location.href =
-        `${REQUEST_NEW_URL}?date=${encodeURIComponent(selectedDateStr)}&birth=${encodeURIComponent(birth)}`;
-    }
+  setTimeout(() => {
+    pinInputs[0].focus();
+    pinInputs[0].click();
+  }, 80);
+}
+
+function closeAuthModal() {
+  backdrop.style.display = 'none';
+  backdrop.setAttribute('aria-hidden', 'true');
+  authError.textContent = '';
+  clearPins();
+  selectedDateStr = null;
+}
+
+function goRequestNew() {
+  const birth = birthInput.value.trim();
+  if (!selectedDateStr) return;
+
+  if (!/^\d{6}$/.test(birth)) {
+    authError.textContent = '생년월일 6자리를 입력해주세요.';
+    shakePin();
+    const firstEmpty = pinInputs.find(input => !input.value);
+    (firstEmpty || pinInputs[0]).focus();
+    return;
+  }
+
+  window.location.href =
+    `${REQUEST_NEW_URL}?date=${encodeURIComponent(selectedDateStr)}&birth=${encodeURIComponent(birth)}`;
+}
 
     btnCancel.addEventListener('click', closeAuthModal);
     btnOk.addEventListener('click', goRequestNew);
@@ -494,10 +562,87 @@
       if (e.target === backdrop) closeAuthModal();
     });
 
-    birthInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') goRequestNew();
-      if (e.key === 'Escape') closeAuthModal();
+pinInputs.forEach((input, index) => {
+  input.addEventListener('input', (e) => {
+    const onlyNumber = e.target.value.replace(/[^0-9]/g, '');
+    e.target.value = onlyNumber ? onlyNumber.slice(-1) : '';
+    authError.textContent = '';
+    syncBirthInput();
+
+    if (e.target.value && index < pinInputs.length - 1) {
+      pinInputs[index + 1].focus();
+      pinInputs[index + 1].select?.();
+    }
+
+    if (birthInput.value.length === 6) {
+      goRequestNew();
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      goRequestNew();
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeAuthModal();
+      return;
+    }
+
+    if (e.key === 'Backspace') {
+      if (input.value) {
+        input.value = '';
+        syncBirthInput();
+        e.preventDefault();
+      } else if (index > 0) {
+        pinInputs[index - 1].value = '';
+        syncBirthInput();
+        pinInputs[index - 1].focus();
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowLeft' && index > 0) {
+      pinInputs[index - 1].focus();
+      e.preventDefault();
+      return;
+    }
+
+    if (e.key === 'ArrowRight' && index < pinInputs.length - 1) {
+      pinInputs[index + 1].focus();
+      e.preventDefault();
+    }
+  });
+
+  input.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+    const numbers = pasted.replace(/[^0-9]/g, '').slice(0, 6).split('');
+
+    if (!numbers.length) return;
+
+    pinInputs.forEach((pin, i) => {
+      pin.value = numbers[i] || '';
     });
+
+    syncBirthInput();
+
+    const nextIndex = Math.min(numbers.length, 5);
+    pinInputs[nextIndex].focus();
+
+    if (birthInput.value.length === 6) {
+      goRequestNew();
+    }
+  });
+
+  input.addEventListener('focus', () => {
+    input.select?.();
+  });
+});
 
     // ===== FullCalendar =====
     document.addEventListener('DOMContentLoaded', function () {
