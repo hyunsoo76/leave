@@ -3,89 +3,519 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>{{ emp.name }} - {{ year }}</title>
+  <title>{{ emp.name }} - {{ year }} 연차</title>
   <style>
-    body { font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR"; padding: 12px; }
-    .card { border:1px solid #eee; border-radius:12px; padding:12px; margin-bottom:12px; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#f2f2f2; margin:2px 4px 0 0; }
-    table { width:100%; border-collapse:collapse; font-size:14px; }
-    th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; }
-    th { background:#fafafa; }
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --dark:#111111;
+      --soft:#f3f4f6;
+      --blue:#0f3d91;
+      --red:#d92d20;
+      --green:#137333;
+      --shadow:0 10px 30px rgba(17,24,39,.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      padding:16px;
+    }
+
+    .wrap{
+      max-width:920px;
+      margin:0 auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .title-block{
+      min-width:0;
+    }
+
+    .page-title{
+      margin:0;
+      font-size:28px;
+      font-weight:800;
+      letter-spacing:-0.02em;
+    }
+
+    .page-sub{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .calendar-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:44px;
+      padding:0 16px;
+      border-radius:999px;
+      background:var(--dark);
+      color:#fff;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+      box-shadow:var(--shadow);
+    }
+
+    .year-form{
+      margin-bottom:14px;
+    }
+
+    .year-box{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      box-shadow:0 4px 16px rgba(17,24,39,.04);
+    }
+
+    .year-label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .year-select{
+      border:0;
+      background:transparent;
+      font-size:15px;
+      font-weight:700;
+      color:var(--text);
+      outline:none;
+      padding-right:4px;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .hero-card{
+      background:linear-gradient(180deg,#ffffff 0%, #f8fafc 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px 18px 16px;
+      box-shadow:var(--shadow);
+    }
+
+    .hero-label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    .hero-value{
+      font-size:34px;
+      line-height:1;
+      font-weight:800;
+      letter-spacing:-0.04em;
+    }
+
+    .hero-desc{
+      margin-top:8px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .hero-card.remain .hero-value.negative{
+      color:var(--red);
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .mini-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 4px 18px rgba(17,24,39,.05);
+    }
+
+    .mini-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .mini-value{
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:-0.02em;
+    }
+
+    .section{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .section-title{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-0.02em;
+    }
+
+    .section-sub{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      background:#f3f4f6;
+      color:#1f2937;
+      font-size:13px;
+      font-weight:700;
+      border:1px solid #e5e7eb;
+    }
+
+    .empty{
+      color:var(--muted);
+      font-size:14px;
+      padding:6px 2px;
+    }
+
+    .history-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .history-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:#fff;
+    }
+
+    .history-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .period{
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:-0.02em;
+    }
+
+    .type-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:var(--blue);
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .type-badge.half{
+      background:#ecfeff;
+      color:#0f766e;
+    }
+
+    .history-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .history-kv{
+      background:#f9fafb;
+      border:1px solid #eef0f3;
+      border-radius:14px;
+      padding:10px;
+    }
+
+    .history-k{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
+    .history-v{
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .reason-box{
+      background:#f9fafb;
+      border:1px solid #eef0f3;
+      border-radius:14px;
+      padding:11px 12px;
+    }
+
+    .reason-label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
+    .reason-text{
+      font-size:14px;
+      line-height:1.45;
+      word-break:break-word;
+    }
+
+    .reason-text.empty-text{
+      color:var(--muted);
+    }
+
+    @media (max-width: 768px){
+      body{
+        padding:12px;
+      }
+
+      .topbar{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .calendar-btn{
+        width:100%;
+      }
+
+      .page-title{
+        font-size:24px;
+      }
+
+      .hero-grid{
+        gap:10px;
+      }
+
+      .hero-card{
+        padding:16px 14px 14px;
+      }
+
+      .hero-value{
+        font-size:28px;
+      }
+
+      .summary-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .history-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 420px){
+      .hero-grid{
+        grid-template-columns:1fr;
+      }
+
+      .summary-grid{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .section,
+      .hero-card{
+        border-radius:18px;
+      }
+    }
   </style>
 </head>
 <body>
-  <p>
-    <a href="{% url 'leaves:calendar' %}">달력</a> |
-    <a href="{% url 'leaves:me_lookup' %}">다시 인증</a>
-  </p>
-
-  <h2>{{ emp.name }} ({{ year }})</h2>
-  <form method="get" style="margin: 12px 0; display:flex; gap:8px; align-items:center;">
-  <label for="yearSel" style="font-size:14px; color:#555;">년도</label>
-  <select id="yearSel" name="year"
-          style="padding:8px 10px; border:1px solid #ddd; border-radius:10px;"
-          onchange="this.form.submit()">
-    {% for y in years %}
-      <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
-    {% endfor %}
-  </select>
-
-  <!-- 버튼도 원하면 사용(자동 submit 싫으면 onchange 지우고 버튼만 쓰면 됨) -->
-  <noscript><button type="submit">이동</button></noscript>
-</form>
-
-
-  <div class="card">
-    <div>이월: <b>{{ leave_year.carry_over }}</b></div>
-    <div>올해 연차: <b>{{ leave_year.base_days }}</b></div>
-    <div>대체휴무 발생: <b>{{ comp_total }}</b></div>
-    <div><b>총연차수: {{ summary.total_grant }}</b></div>
-    {% if comp_grants %}
-      <div style="margin-top:6px;">
-        {% for g in comp_grants %}
-          <span class="pill">{{ g.worked_date|date:"m/d" }} {{ g.holiday_name }} (+{{ g.amount }})</span>
-        {% endfor %}
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title-block">
+        <h1 class="page-title">{{ emp.name }}</h1>
+        <div class="page-sub">{{ year }}년 연차 내역</div>
       </div>
-    {% endif %}
-    <hr/>
-    <div>대체 사용: <b>{{ used_comp }}</b></div>
-    <div>연차 사용: <b>{{ used_annual }}</b></div>
-    <div><b>총 잔여:</b> <b>{{ remain_total }}</b></div>
-  </div>
+      <a href="{% url 'leaves:calendar' %}" class="calendar-btn">연차달력</a>
+    </div>
 
-  <div class="card">
-    <h3 style="margin-top:0;">사용 내역</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>기간</th>
-          <th>종류</th>
-          <th>차감(대체/연차)</th>
-          <th>사유</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in requests %}
-          <tr>
-            <td>
-              {{ r.start_date|date:"Y-m-d" }}
-              {% if r.end_date and r.end_date != r.start_date %} ~ {{ r.end_date|date:"Y-m-d" }}{% endif %}
-            </td>
-            <td>
-              {% if r.leave_type == "HALF" %}
-                반차({{ r.get_half_day_display }})
-              {% else %}
-                연차
-              {% endif %}
-            </td>
-            <td>{{ r.used_comp }} / {{ r.used_annual }}</td>
-            <td>{{ r.reason|default:"" }}</td>
-          </tr>
-        {% empty %}
-          <tr><td colspan="3">내역이 없습니다.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <form method="get" class="year-form">
+      <div class="year-box">
+        <span class="year-label">년도</span>
+        <select id="yearSel" name="year" class="year-select" onchange="this.form.submit()">
+          {% for y in years %}
+            <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}년</option>
+          {% endfor %}
+        </select>
+      </div>
+      <noscript><button type="submit">이동</button></noscript>
+    </form>
+
+    <div class="hero-grid">
+      <div class="hero-card">
+        <div class="hero-label">총연차수</div>
+        <div class="hero-value">{{ summary.total_grant }}</div>
+        <div class="hero-desc">기본연차 + 이월 + 대체휴무 발생</div>
+      </div>
+
+      <div class="hero-card remain">
+        <div class="hero-label">총 잔여</div>
+        <div class="hero-value {% if remain_total < 0 %}negative{% endif %}">
+          {{ remain_total }}
+        </div>
+        <div class="hero-desc">현재 기준 사용 가능한 총 잔여 수량</div>
+      </div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="mini-card">
+        <div class="mini-label">이월</div>
+        <div class="mini-value">{{ leave_year.carry_over }}</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">올해 연차</div>
+        <div class="mini-value">{{ leave_year.base_days }}</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">대체휴무 발생</div>
+        <div class="mini-value">{{ comp_total }}</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">총 사용</div>
+        <div class="mini-value">{{ summary.total_used }}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2 class="section-title">대체휴무 발생</h2>
+        <div class="section-sub">발생 내역 요약</div>
+      </div>
+
+      {% if comp_grants %}
+        <div class="chips">
+          {% for g in comp_grants %}
+            <span class="chip">
+              {{ g.worked_date|date:"m/d" }}
+              {% if g.holiday_name %}{{ g.holiday_name }}{% endif %}
+              (+{{ g.amount }})
+            </span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">발생 내역이 없습니다.</div>
+      {% endif %}
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2 class="section-title">사용내역</h2>
+        <div class="section-sub">{{ requests|length }}건</div>
+      </div>
+
+      {% if requests %}
+        <div class="history-list">
+          {% for r in requests %}
+            <div class="history-card">
+              <div class="history-top">
+                <div class="period">
+                  {{ r.start_date|date:"Y-m-d" }}
+                  {% if r.end_date and r.end_date != r.start_date %}
+                    ~ {{ r.end_date|date:"Y-m-d" }}
+                  {% endif %}
+                </div>
+
+                <div class="type-badge {% if r.leave_type == 'HALF' %}half{% endif %}">
+                  {% if r.leave_type == "HALF" %}
+                    반차({{ r.get_half_day_display }})
+                  {% else %}
+                    연차
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="history-grid">
+                <div class="history-kv">
+                  <div class="history-k">대체 사용</div>
+                  <div class="history-v">{{ r.used_comp }}</div>
+                </div>
+                <div class="history-kv">
+                  <div class="history-k">연차 사용</div>
+                  <div class="history-v">{{ r.used_annual }}</div>
+                </div>
+                <div class="history-kv">
+                  <div class="history-k">총 차감</div>
+                  <div class="history-v">{{ r.used_comp|add:r.used_annual }}</div>
+                </div>
+              </div>
+
+              <div class="reason-box">
+                <div class="reason-label">사유</div>
+                <div class="reason-text {% if not r.reason %}empty-text{% endif %}">
+                  {% if r.reason %}
+                    {{ r.reason }}
+                  {% else %}
+                    사유 없음
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">사용 내역이 없습니다.</div>
+      {% endif %}
+    </div>
   </div>
 </body>
 </html>
