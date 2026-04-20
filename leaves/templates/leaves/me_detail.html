@@ -15,8 +15,8 @@
       --soft:#f8fafc;
       --blue:#0f3d91;
       --red:#d92d20;
+      --teal:#0f766e;
       --shadow:0 10px 28px rgba(17,24,39,.08);
-      --radius:20px;
     }
 
     *{box-sizing:border-box}
@@ -36,14 +36,10 @@
 
     .topbar{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:12px;
       margin-bottom:14px;
-    }
-
-    .title-block{
-      min-width:0;
     }
 
     .page-title{
@@ -57,22 +53,6 @@
       margin-top:4px;
       color:var(--muted);
       font-size:14px;
-    }
-
-    .calendar-btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:44px;
-      padding:0 16px;
-      border-radius:999px;
-      background:var(--dark);
-      color:#fff;
-      text-decoration:none;
-      font-size:14px;
-      font-weight:700;
-      white-space:nowrap;
-      box-shadow:var(--shadow);
     }
 
     .year-form{
@@ -129,10 +109,6 @@
       margin-bottom:14px;
     }
 
-    .group-title-wrap{
-      min-width:0;
-    }
-
     .group-title{
       margin:0;
       font-size:18px;
@@ -183,10 +159,6 @@
       border:1px solid var(--line);
       border-radius:16px;
       background:var(--soft);
-    }
-
-    .group-item-left{
-      min-width:0;
     }
 
     .group-item-label{
@@ -313,7 +285,7 @@
 
     .type-badge.half{
       background:#ecfeff;
-      color:#0f766e;
+      color:var(--teal);
     }
 
     .num{
@@ -334,18 +306,122 @@
       border-bottom:0;
     }
 
+    .mobile-history{
+      display:none;
+    }
+
+    .history-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      box-shadow:0 4px 18px rgba(17,24,39,.05);
+      margin-bottom:10px;
+    }
+
+    .history-card:last-child{
+      margin-bottom:0;
+    }
+
+    .history-card-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .history-date{
+      font-size:16px;
+      font-weight:800;
+      line-height:1.35;
+      letter-spacing:-0.02em;
+    }
+
+    .history-days{
+      margin-top:4px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .history-main{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .history-box{
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    .history-box-label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
+    .history-box-value{
+      font-size:16px;
+      font-weight:800;
+      line-height:1.2;
+    }
+
+    .reason-card{
+      background:#f9fafb;
+      border:1px solid #eef0f3;
+      border-radius:14px;
+      padding:10px 12px;
+    }
+
+    .reason-card-label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
+    .reason-card-text{
+      font-size:14px;
+      line-height:1.45;
+      word-break:break-word;
+      color:#374151;
+    }
+
+    .reason-card-text.empty-text{
+      color:var(--muted);
+    }
+
+    .bottom-actions{
+      margin-top:16px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .calendar-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:46px;
+      padding:0 18px;
+      border-radius:999px;
+      background:var(--dark);
+      color:#fff;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+      box-shadow:var(--shadow);
+    }
+
     @media (max-width: 768px){
       body{
         padding:12px;
-      }
-
-      .topbar{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-
-      .calendar-btn{
-        width:100%;
       }
 
       .page-title{
@@ -363,6 +439,14 @@
 
       .group-total-value{
         font-size:30px;
+      }
+
+      .desktop-history{
+        display:none;
+      }
+
+      .mobile-history{
+        display:block;
       }
     }
 
@@ -384,8 +468,12 @@
         font-size:20px;
       }
 
-      th, td{
-        padding:10px 8px;
+      .history-main{
+        grid-template-columns:1fr;
+      }
+
+      .calendar-btn{
+        width:100%;
       }
     }
   </style>
@@ -393,11 +481,10 @@
 <body>
   <div class="wrap">
     <div class="topbar">
-      <div class="title-block">
+      <div>
         <h1 class="page-title">{{ emp.name }}</h1>
         <div class="page-sub">{{ year }}년 연차 내역</div>
       </div>
-      <a href="{% url 'leaves:calendar' %}" class="calendar-btn">연차달력</a>
     </div>
 
     <form method="get" class="year-form">
@@ -415,7 +502,7 @@
     <div class="group-grid">
       <div class="group-card">
         <div class="group-head">
-          <div class="group-title-wrap">
+          <div>
             <h2 class="group-title">총연차수</h2>
             <div class="group-desc">이월 + 올해연차 + 대체휴무발생</div>
           </div>
@@ -427,7 +514,7 @@
 
         <div class="group-items">
           <div class="group-item">
-            <div class="group-item-left">
+            <div>
               <div class="group-item-label">이월</div>
               <div class="group-item-sub">전년도 이월 연차</div>
             </div>
@@ -435,7 +522,7 @@
           </div>
 
           <div class="group-item">
-            <div class="group-item-left">
+            <div>
               <div class="group-item-label">올해연차</div>
               <div class="group-item-sub">해당 연도 기본 연차</div>
             </div>
@@ -443,7 +530,7 @@
           </div>
 
           <div class="group-item">
-            <div class="group-item-left">
+            <div>
               <div class="group-item-label">대체휴무발생</div>
               <div class="group-item-sub">공휴일 근무 등으로 발생</div>
             </div>
@@ -454,9 +541,9 @@
 
       <div class="group-card">
         <div class="group-head">
-          <div class="group-title-wrap">
+          <div>
             <h2 class="group-title">총 잔여</h2>
-            <div class="group-desc">총연차수에서 현재까지 사용한 내역 반영</div>
+            <div class="group-desc">사용 내역 반영 후 현재 기준 잔여</div>
           </div>
           <div class="group-total">
             <div class="group-total-label">현재 잔여</div>
@@ -468,7 +555,7 @@
 
         <div class="group-items">
           <div class="group-item">
-            <div class="group-item-left">
+            <div>
               <div class="group-item-label">대체사용</div>
               <div class="group-item-sub">대체휴무에서 차감된 수량</div>
             </div>
@@ -476,7 +563,7 @@
           </div>
 
           <div class="group-item">
-            <div class="group-item-left">
+            <div>
               <div class="group-item-label">연차사용</div>
               <div class="group-item-sub">기본/이월 연차에서 차감된 수량</div>
             </div>
@@ -514,54 +601,114 @@
       </div>
 
       {% if requests %}
-        <div class="history-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>기간</th>
-                <th>종류</th>
-                <th>대체사용</th>
-                <th>연차사용</th>
-                <th>총 차감</th>
-                <th>사유</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for r in requests %}
+        <div class="desktop-history">
+          <div class="history-wrap">
+            <table>
+              <thead>
                 <tr>
-                  <td>
+                  <th>기간</th>
+                  <th>종류</th>
+                  <th>대체사용</th>
+                  <th>연차사용</th>
+                  <th>총 차감</th>
+                  <th>사유</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in requests %}
+                  <tr>
+                    <td>
+                      {{ r.start_date|date:"Y-m-d" }}
+                      {% if r.end_date and r.end_date != r.start_date %}
+                        ~ {{ r.end_date|date:"Y-m-d" }}
+                      {% endif %}
+                    </td>
+                    <td>
+                      <span class="type-badge {% if r.leave_type == 'HALF' %}half{% endif %}">
+                        {% if r.leave_type == "HALF" %}
+                          반차({{ r.get_half_day_display }})
+                        {% else %}
+                          연차
+                        {% endif %}
+                      </span>
+                    </td>
+                    <td class="num">{{ r.used_comp }}</td>
+                    <td class="num">{{ r.used_annual }}</td>
+                    <td class="num">{{ r.used_comp|add:r.used_annual }}</td>
+                    <td class="reason {% if not r.reason %}empty-text{% endif %}">
+                      {% if r.reason %}
+                        {{ r.reason }}
+                      {% else %}
+                        사유 없음
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mobile-history">
+          {% for r in requests %}
+            <div class="history-card">
+              <div class="history-card-top">
+                <div>
+                  <div class="history-date">
                     {{ r.start_date|date:"Y-m-d" }}
                     {% if r.end_date and r.end_date != r.start_date %}
                       ~ {{ r.end_date|date:"Y-m-d" }}
                     {% endif %}
-                  </td>
-                  <td>
-                    <span class="type-badge {% if r.leave_type == 'HALF' %}half{% endif %}">
-                      {% if r.leave_type == "HALF" %}
-                        반차({{ r.get_half_day_display }})
-                      {% else %}
-                        연차
-                      {% endif %}
-                    </span>
-                  </td>
-                  <td class="num">{{ r.used_comp }}</td>
-                  <td class="num">{{ r.used_annual }}</td>
-                  <td class="num">{{ r.used_comp|add:r.used_annual }}</td>
-                  <td class="reason {% if not r.reason %}empty-text{% endif %}">
-                    {% if r.reason %}
-                      {{ r.reason }}
-                    {% else %}
-                      사유 없음
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                  </div>
+                  <div class="history-days">
+                    총 차감 {{ r.used_comp|add:r.used_annual }}일
+                  </div>
+                </div>
+
+                <span class="type-badge {% if r.leave_type == 'HALF' %}half{% endif %}">
+                  {% if r.leave_type == "HALF" %}
+                    반차({{ r.get_half_day_display }})
+                  {% else %}
+                    연차
+                  {% endif %}
+                </span>
+              </div>
+
+              <div class="history-main">
+                <div class="history-box">
+                  <div class="history-box-label">대체에서 차감</div>
+                  <div class="history-box-value">{{ r.used_comp }}</div>
+                </div>
+                <div class="history-box">
+                  <div class="history-box-label">연차에서 차감</div>
+                  <div class="history-box-value">{{ r.used_annual }}</div>
+                </div>
+                <div class="history-box">
+                  <div class="history-box-label">총 차감</div>
+                  <div class="history-box-value">{{ r.used_comp|add:r.used_annual }}</div>
+                </div>
+              </div>
+
+              <div class="reason-card">
+                <div class="reason-card-label">사유</div>
+                <div class="reason-card-text {% if not r.reason %}empty-text{% endif %}">
+                  {% if r.reason %}
+                    {{ r.reason }}
+                  {% else %}
+                    사유 없음
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
         </div>
       {% else %}
         <div class="empty">사용 내역이 없습니다.</div>
       {% endif %}
+    </div>
+
+    <div class="bottom-actions">
+      <a href="{% url 'leaves:calendar' %}" class="calendar-btn">연차달력</a>
     </div>
   </div>
 </body>
