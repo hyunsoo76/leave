@@ -497,6 +497,7 @@
     const EVENTS_URL = "{% url 'leaves:events_api' %}";
     const REQUEST_NEW_URL = "{% url 'leaves:request_new' %}";
     const MY_LEAVE_URL = "{% url 'leaves:me_lookup' %}";
+    const VERIFY_BIRTH_URL = "{% url 'leaves:verify_birth' %}";
     // ===== Modal helpers =====
     const backdrop = document.getElementById('authModalBackdrop');
     const authTitle = document.getElementById('authTitle');
@@ -562,11 +563,37 @@ function closeAuthModal() {
   clearPins();
   selectedDateStr = null;
   authMode = 'request';
+  authSubmitting = false;
   authTitle.textContent = '휴무 신청';
   selectedDateRow.style.display = 'block';
 }
 
-function submitAuth() {
+async function verifyBirthExists(birth) {
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+  const response = await fetch(VERIFY_BIRTH_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': csrfToken || ''
+    },
+    body: new URLSearchParams({ birth })
+  });
+
+  if (!response.ok) {
+    throw new Error('birth verify failed');
+  }
+
+  const data = await response.json();
+  return !!data.ok;
+}
+
+let authSubmitting = false;
+
+async function submitAuth() {
+  if (authSubmitting) return;
+
   const birth = birthInput.value.trim();
 
   if (!/^\d{6}$/.test(birth)) {
@@ -577,17 +604,41 @@ function submitAuth() {
     return;
   }
 
-  if (authMode === 'myLeave') {
-    myLeaveBirthInput.value = birth;
-    myLeaveForm.submit();
-    return;
+  authSubmitting = true;
+  authError.textContent = '';
+
+  try {
+    const exists = await verifyBirthExists(birth);
+
+    if (!exists) {
+      authError.textContent = '등록된 생년월일이 아닙니다.';
+      shakePin();
+      clearPins();
+      pinInputs[0].focus();
+      authSubmitting = false;
+      return;
+    }
+
+    if (authMode === 'myLeave') {
+      myLeaveBirthInput.value = birth;
+      myLeaveForm.submit();
+      return;
+    }
+
+    if (!selectedDateStr) {
+      authSubmitting = false;
+      return;
+    }
+
+    window.location.href =
+      `${REQUEST_NEW_URL}?date=${encodeURIComponent(selectedDateStr)}&birth=${encodeURIComponent(birth)}`;
+  } catch (error) {
+    authError.textContent = '확인 중 오류가 발생했습니다. 다시 시도해주세요.';
+    shakePin();
+    authSubmitting = false;
   }
-
-  if (!selectedDateStr) return;
-
-  window.location.href =
-    `${REQUEST_NEW_URL}?date=${encodeURIComponent(selectedDateStr)}&birth=${encodeURIComponent(birth)}`;
 }
+
     btnCancel.addEventListener('click', closeAuthModal);
     btnOk.addEventListener('click', submitAuth);
 

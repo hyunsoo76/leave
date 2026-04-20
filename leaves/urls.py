@@ -13,6 +13,7 @@ urlpatterns = [
 
     # 개인 페이지 (생년월일 인증 흐름)
     path("me/", views.me_lookup, name="me_lookup"),                 # 생년월일 입력/선택
+    path("verify-birth/", views.verify_birth, name="verify_birth"),
     path("me/<int:employee_id>/", views.me_detail, name="me_detail"),# 개인 상세
 
     # 직원 공개 리스트(원하면 유지, 아니면 제거 가능)
