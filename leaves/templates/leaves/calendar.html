@@ -464,8 +464,10 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
       <h3 id="authTitle">휴무 신청</h3>
       <div class="sub">
-        선택 날짜: <b id="selectedDateText">-</b><br/>
-        생년월일 6자리
+        <div id="selectedDateRow">
+          선택 날짜: <b id="selectedDateText">-</b>
+        </div>
+        <div>생년월일 6자리</div>
       </div>
 
       <div class="pin-wrap" id="pinWrap">
@@ -498,6 +500,7 @@
     // ===== Modal helpers =====
     const backdrop = document.getElementById('authModalBackdrop');
     const authTitle = document.getElementById('authTitle');
+    const selectedDateRow = document.getElementById('selectedDateRow');
     const selectedDateText = document.getElementById('selectedDateText');
     const birthInput = document.getElementById('birthInput');
     const pinWrap = document.getElementById('pinWrap');
@@ -536,14 +539,13 @@ function openAuthModal(mode, dateStr = null) {
 
   if (mode === 'request') {
     authTitle.textContent = '휴무 신청';
-    selectedDateText.parentElement.style.display = 'block';
+    selectedDateRow.style.display = 'block';
     selectedDateText.textContent = dateStr || '-';
   } else {
     authTitle.textContent = '내 연차 보기';
-    selectedDateText.parentElement.style.display = 'block';
+    selectedDateRow.style.display = 'none';
     selectedDateText.textContent = '-';
   }
-
   backdrop.style.display = 'flex';
   backdrop.setAttribute('aria-hidden', 'false');
 
@@ -561,7 +563,7 @@ function closeAuthModal() {
   selectedDateStr = null;
   authMode = 'request';
   authTitle.textContent = '휴무 신청';
-  selectedDateText.parentElement.style.display = 'block';
+  selectedDateRow.style.display = 'block';
 }
 
 function submitAuth() {
