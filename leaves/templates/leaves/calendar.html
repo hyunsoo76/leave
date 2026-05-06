@@ -419,6 +419,36 @@
         animation: fakeHapticNudge 120ms ease-out;
       }
 
+            /* 월 이동 슬라이드 효과 */
+      #calendar.month-slide-left {
+        animation: monthSlideLeft .26s ease-out;
+      }
+
+      #calendar.month-slide-right {
+        animation: monthSlideRight .26s ease-out;
+      }
+
+      @keyframes monthSlideLeft {
+        0% {
+          opacity: .7;
+          transform: translateX(34px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes monthSlideRight {
+        0% {
+          opacity: .7;
+          transform: translateX(-34px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
 
 
   </style>
@@ -910,6 +940,23 @@ pinInputs.forEach((input, index) => {
         realVibrate();   // 가능하면 진동
         fakeHaptic();    // iOS에서도 체감용
       }
+      
+      function animateMonthMove(direction, moveFn) {
+        const cls = direction === 'next' ? 'month-slide-left' : 'month-slide-right';
+
+        calendarEl.classList.remove('month-slide-left', 'month-slide-right');
+        void calendarEl.offsetWidth;
+
+        moveFn();
+
+        requestAnimationFrame(() => {
+          calendarEl.classList.add(cls);
+        });
+
+        setTimeout(() => {
+          calendarEl.classList.remove(cls);
+        }, 280);
+      }
 
       if (isTouchDevice()) {
         let startX = 0;
@@ -950,10 +997,10 @@ pinInputs.forEach((input, index) => {
             if (Math.abs(dx) < SWIPE_MIN_X) return;
 
             if (dx < 0) {
-              calendar.next();   // 다음 달
+              animateMonthMove('next', () => calendar.next());
               hapticTick();
             } else {
-              calendar.prev();   // 이전 달
+              animateMonthMove('prev', () => calendar.prev());
               hapticTick();
             }
           },
