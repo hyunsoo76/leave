@@ -586,6 +586,7 @@
               {{ g.worked_date|date:"m/d" }}
               {% if g.holiday_name %}{{ g.holiday_name }}{% endif %}
               (+{{ g.amount }})
+              {% if g.memo %}- {{ g.memo }}{% endif %}
             </span>
           {% endfor %}
         </div>

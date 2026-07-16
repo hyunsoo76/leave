@@ -874,7 +874,7 @@ def me_detail(request, employee_id: int):
 
     comp_grants = list(
         CompDayGrant.objects.filter(leave_year=ly).order_by("worked_date")
-        .values("worked_date", "holiday_name", "amount")
+        .values("worked_date", "holiday_name", "amount", "memo")
     )
 
     used_comp = float(LeaveRequest.objects.filter(leave_year=ly).aggregate(s=Sum("used_comp"))["s"] or 0)
